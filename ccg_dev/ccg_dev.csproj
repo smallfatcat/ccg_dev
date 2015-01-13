@@ -20,6 +20,8 @@
   <ItemGroup>
     <Content Include="app.css" />
     <Content Include="index.html" />
+    <Content Include="jquery-2.1.3.js" />
+    <Content Include="underscore-min.js" />
     <Content Include="web.config" />
   </ItemGroup>
   <ItemGroup>
