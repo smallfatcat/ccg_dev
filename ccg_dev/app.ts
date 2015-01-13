@@ -1,5 +1,6 @@
-﻿var PHYSICS_TICK: number = 10;
-var PHYSICS_GRAVITY: number = 9.8;
+﻿var PHYSICS_TICK: number = 33;
+var PHYSICS_GRAVITY: number = 98;
+var MAX_BALLS: number = 100;
 
 class Entity {
   id: number;
@@ -16,8 +17,8 @@ class Entity {
     this.id = properties.id;
     this.xPos = properties.xPos;
     this.yPos = properties.yPos;
-    this.xVel = 50;
-    this.yVel = -50;
+    this.xVel = 150;
+    this.yVel = -100;
     this.xAcc = 0;
     this.yAcc = PHYSICS_GRAVITY;
   }
@@ -75,8 +76,16 @@ interface PlayerProps extends EntProps {
 }
 
 
-var g_player1 = new Player({ id: 1, xPos: 10, yPos: 0, iconID: 1, name: 'David' });
-var g_player2 = new Player({ id: 2, xPos: 10, yPos: 250, iconID: 2, name: 'Gary' });
+//var g_player1 = new Player({ id: 1, xPos: 100, yPos: 100, iconID: 1, name: 'David' });
+//var g_player2 = new Player({ id: 2, xPos: 200, yPos: 250, iconID: 2, name: 'Gary' });
+var g_entities = [];
+
+for (var i = 0;i<MAX_BALLS; i++) {
+  var ball: Player = new Player({ id: i, xPos: Math.random() * 400, yPos: Math.random() * 700, iconID: 1, name: String(i) });
+  ball.xVel = (Math.random() * 300) - 50;
+  ball.yVel = (Math.random() * 300) - 50;
+  g_entities.push(ball);
+}
 
 window.onload = () => {
   render();
@@ -85,13 +94,15 @@ window.onload = () => {
 
 function render() {
   $('#content').empty();
-  renderPlayer(g_player1);
-  renderPlayer(g_player2);
+  for (var i = 0; i < MAX_BALLS; i++) {
+    renderPlayer(g_entities[i]);
+  }
 }
 
 function physics() {
-  physicsPlayer(g_player1);
-  physicsPlayer(g_player2);
+  for (var i = 0; i < MAX_BALLS; i++) {
+    physicsPlayer(g_entities[i]);
+  }
   setTimeout(physics, PHYSICS_TICK);
   render();
 }
@@ -111,13 +122,35 @@ function physicsPlayer(player: Player) {
   var endx: number = startx + ((ux * t) + (0.5 * t * t * player.xAcc));
   var endy: number = starty + ((uy * t) + (0.5 * t * t * player.yAcc ) );
 
-  if (endx > 800) {
-    endx -= 800;
+  var collided;
+
+  collided = collide(t, ux, vx, startx, endx, 800, player.xAcc, 1, 0.9);
+  endx = collided.end;
+  vx = collided.v;
+  if (collided.touched) {
+    vy *= 0.99;
   }
 
-  var collided = collide(t, uy, vy, starty, endy, 500, player.yAcc);
+  collided = collide(t, ux, vx, startx, endx, 0, player.xAcc, -1, 0.9);
+  endx = collided.end;
+  vx = collided.v;
+  if (collided.touched) {
+    vy *= 0.99;
+  }
+
+  collided = collide(t, uy, vy, starty, endy, 800, player.yAcc, 1, 0.9);
   endy = collided.end;
   vy = collided.v;
+  if (collided.touched) {
+    vx *= 0.99;
+  }
+
+  collided = collide(t, uy, vy, starty, endy, 0, player.yAcc, -1, 0.9);
+  endy = collided.end;
+  vy = collided.v;
+  if (collided.touched) {
+    vx *= 0.99;
+  }
  
   player.xPos = endx;
   player.yPos = endy;
@@ -127,14 +160,16 @@ function physicsPlayer(player: Player) {
 
 }
 
-function collide(t: number, u: number, v: number, start: number, end: number, limit: number, acc: number) {
-  if (end > limit) {
-    var s: number = limit - start;
-    v = Math.sqrt(u * u + (2 * acc * s));
-    var collisionTime: number = (v - u) / acc;
+function collide(t: number, u: number, v: number, start: number, end: number, limit: number, acc: number, direction: number, elasticity: number) {
+  var touched: boolean = false;
+  if ((end > limit && direction == 1) || (end < limit && direction == -1)) {
+    touched = true;
+    var s: number = (limit - start) * direction;
+    v = Math.sqrt(u * u + (2 * acc * s)) * direction;
+    var collisionTime: number = acc > 0 ? (v - u) / acc : s / u;
     var remainingtime: number = t - collisionTime;
-    v *= -0.8;
-    if (v < -0.01) {
+    v *= -1*elasticity;
+    if ((v < -0.01 && direction == 1 )|| (v > 0.01 && direction == -1)) {
       u = v;
       start = limit;
       end = start + ((u * remainingtime) + (0.5 * remainingtime * remainingtime * acc));
@@ -142,16 +177,18 @@ function collide(t: number, u: number, v: number, start: number, end: number, li
       //end = 500;
     }
     else {
-      end = 500;
+      end = limit;
       v = 0;
     }
   }
-  return {'end': end, 'v': v}
+  return { 'end': end, 'v': v, 'touched': touched };
 }
 
 function renderPlayer(player: Player) {
   var playerDiv: string = '';
-  playerDiv += '<div id="playerDiv' + player.id + '" class="absolute" style="left: ' + player.xPos + 'px; top: ' + player.yPos + 'px;">' + player.name + ' x: ' + player.xPos + ' y: ' + player.yPos + '</div>';
+  //playerDiv += '<div id="playerDiv' + player.id + '" class="absolute" style="left: ' + player.xPos + 'px; top: ' + player.yPos + 'px;">' + player.name + ' x: ' + player.xPos + ' y: ' + player.yPos + '</div>';
+  playerDiv += '<div id="playerDiv' + player.id + '" class="absolute" style="left: ' + player.xPos + 'px; top: ' + player.yPos + 'px;">' + player.name+'</div>';
+
   $('#content').append(playerDiv);
   //$('#playerDiv').animate({ 'left': player.xPos + 'px', 'top': player.yPos + 'px' });
 }
