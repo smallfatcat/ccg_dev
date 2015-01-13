@@ -1,4 +1,4 @@
-﻿var PHYSICS_TICK: number = 33;
+﻿var PHYSICS_TICK: number = 10;
 var PHYSICS_GRAVITY: number = 9.8;
 
 class Entity {
@@ -16,8 +16,8 @@ class Entity {
     this.id = properties.id;
     this.xPos = properties.xPos;
     this.yPos = properties.yPos;
-    this.xVel = 0;
-    this.yVel = 0;
+    this.xVel = 50;
+    this.yVel = -50;
     this.xAcc = 0;
     this.yAcc = PHYSICS_GRAVITY;
   }
@@ -75,8 +75,8 @@ interface PlayerProps extends EntProps {
 }
 
 
-var g_player1 = new Player({ id: 1, xPos: 10, yPos: 20, iconID: 1, name: 'David' });
-var g_player2 = new Player({ id: 2, xPos: 10, yPos: 50, iconID: 2, name: 'Gary' });
+var g_player1 = new Player({ id: 1, xPos: 10, yPos: 0, iconID: 1, name: 'David' });
+var g_player2 = new Player({ id: 2, xPos: 10, yPos: 250, iconID: 2, name: 'Gary' });
 
 window.onload = () => {
   render();
@@ -102,30 +102,56 @@ function physicsPlayer(player: Player) {
   // v = u + a*t
   var t: number = PHYSICS_TICK / 1000;
 
+  var ux: number = player.xVel;
   var uy: number = player.yVel;
+  var vx: number = ux + (player.xAcc * t);
   var vy: number = uy + (player.yAcc * t);
+  var startx: number = player.xPos;
   var starty: number = player.yPos;
+  var endx: number = startx + ((ux * t) + (0.5 * t * t * player.xAcc));
   var endy: number = starty + ((uy * t) + (0.5 * t * t * player.yAcc ) );
 
-  if (endy > 500) {
-    var s: number = 500 - starty;
-    vy = Math.sqrt(uy * uy * (2 * player.yAcc * s));
-    var collisionTime: number = (vy - uy) / player.yAcc;
-    endy = 500;
-    vy *= -0.9;
+  if (endx > 800) {
+    endx -= 800;
   }
 
-  player.xPos += player.xVel;
+  var collided = collide(t, uy, vy, starty, endy, 500, player.yAcc);
+  endy = collided.end;
+  vy = collided.v;
+ 
+  player.xPos = endx;
   player.yPos = endy;
 
-  player.xVel += player.xAcc;
+  player.xVel = vx;
   player.yVel = vy;
 
 }
 
+function collide(t: number, u: number, v: number, start: number, end: number, limit: number, acc: number) {
+  if (end > limit) {
+    var s: number = limit - start;
+    v = Math.sqrt(u * u + (2 * acc * s));
+    var collisionTime: number = (v - u) / acc;
+    var remainingtime: number = t - collisionTime;
+    v *= -0.8;
+    if (v < -0.01) {
+      u = v;
+      start = limit;
+      end = start + ((u * remainingtime) + (0.5 * remainingtime * remainingtime * acc));
+      v = u + (acc * remainingtime);
+      //end = 500;
+    }
+    else {
+      end = 500;
+      v = 0;
+    }
+  }
+  return {'end': end, 'v': v}
+}
+
 function renderPlayer(player: Player) {
   var playerDiv: string = '';
-  playerDiv += '<div id="playerDiv' + player.id + '" class="absolute" style="left: ' + player.xPos + 'px; top: ' + player.yPos + 'px;">' + player.name + '</div>';
+  playerDiv += '<div id="playerDiv' + player.id + '" class="absolute" style="left: ' + player.xPos + 'px; top: ' + player.yPos + 'px;">' + player.name + ' x: ' + player.xPos + ' y: ' + player.yPos + '</div>';
   $('#content').append(playerDiv);
   //$('#playerDiv').animate({ 'left': player.xPos + 'px', 'top': player.yPos + 'px' });
 }
