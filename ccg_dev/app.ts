@@ -1,80 +1,8 @@
-﻿var PHYSICS_TICK: number = 33;
+﻿/// <reference path="classes.ts" />
+
+var PHYSICS_TICK: number = 33;
 var PHYSICS_GRAVITY: number = 98;
 var MAX_BALLS: number = 100;
-
-class Entity {
-  id: number;
-  xPos: number;
-  yPos: number;
-
-  xVel: number;
-  yVel: number;
-
-  xAcc: number;
-  yAcc: number;
-
-  constructor(properties: EntProps) {
-    this.id = properties.id;
-    this.xPos = properties.xPos;
-    this.yPos = properties.yPos;
-    this.xVel = 150;
-    this.yVel = -100;
-    this.xAcc = 0;
-    this.yAcc = PHYSICS_GRAVITY;
-  }
-
-  show() {
-
-  }
-
-  hide() {
-
-  }
-
-  move(x: number, y: number) {
-    this.xPos += x;
-    this.yPos += y;
-  }
-
-  moveTo(x: number, y: number) {
-    this.xPos = x;
-    this.yPos = y;
-  }
-}
-
-class Prop extends Entity {
-  iconID: number;
-  constructor(properties: PropProps) {
-    super(properties);
-    this.iconID = properties.iconID;
-  }
-}
-
-class Player extends Entity {
-  iconID: number;
-  name: string;
-  constructor(properties: PlayerProps) {
-    super(properties);
-    this.name = properties.name;
-    this.iconID = properties.iconID;
-  }
-}
-
-interface EntProps {
-  id: number;
-  xPos: number;
-  yPos: number;
-}
-
-interface PropProps extends EntProps {
-  iconID: number;
-}
-
-interface PlayerProps extends EntProps {
-  iconID: number;
-  name: string;
-}
-
 
 //var g_player1 = new Player({ id: 1, xPos: 100, yPos: 100, iconID: 1, name: 'David' });
 //var g_player2 = new Player({ id: 2, xPos: 200, yPos: 250, iconID: 2, name: 'Gary' });
