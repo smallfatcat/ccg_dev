@@ -9,13 +9,13 @@ function render() {
     html += '<div id="mouseHit" class="absolute" style="left: ' + g_pointer.xPos + 'px; top: ' + g_pointer.yPos + 'px;"><img id="imouseHit" style="width: 32px;" src="crosshair.png"></div>';
 
     $('#content').append(html);
-    canvasFunctions();
+    drawCanvas();
     for (var i = 0; i < MAX_BALLS; i++) {
         $('#i' + i).rotate(g_entities[i].rotDegrees);
     }
 }
 
-function canvasFunctions() {
+function drawCanvas() {
     var c = document.getElementById("myCanvas");
     var ctx = c.getContext("2d");
     ctx.beginPath();
