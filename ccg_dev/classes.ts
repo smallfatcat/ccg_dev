@@ -58,6 +58,25 @@ class Player extends Entity {
     this.iconID = properties.iconID;
   }
 }
+class Bomb extends Entity {
+  maxRadius: number;
+  minRadius: number;
+  radius: number;
+  lifeTime: number;
+  maxLifeTime: number;
+  damage: number;
+  isAlive: boolean;
+  constructor(properties: BombProps) {
+    super(properties);
+    this.maxRadius = properties.maxRadius;
+    this.minRadius = properties.minRadius;
+    this.radius = this.minRadius;
+    this.lifeTime = 0;
+    this.maxLifeTime = properties.maxLifeTime;
+    this.damage = properties.damage;
+    this.isAlive = true;
+  }
+}
 
 interface EntProps {
   id: number;
@@ -73,3 +92,10 @@ interface PlayerProps extends EntProps {
   iconID: number;
   name: string;
 } 
+
+interface BombProps extends EntProps {
+  maxRadius: number;
+  minRadius: number;
+  maxLifeTime: number;
+  damage: number;
+}

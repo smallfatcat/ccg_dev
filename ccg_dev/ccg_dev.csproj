@@ -25,6 +25,9 @@
   <ItemGroup>
     <TypeScriptCompile Include="app.ts" />
     <TypeScriptCompile Include="classes.ts" />
+    <TypeScriptCompile Include="physics.ts" />
+    <TypeScriptCompile Include="render.ts" />
+    <TypeScriptCompile Include="ui.ts" />
   </ItemGroup>
   <ItemGroup>
     <None Include="web.Debug.config">

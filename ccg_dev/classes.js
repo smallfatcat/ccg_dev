@@ -51,4 +51,18 @@ var Player = (function (_super) {
     }
     return Player;
 })(Entity);
+var Bomb = (function (_super) {
+    __extends(Bomb, _super);
+    function Bomb(properties) {
+        _super.call(this, properties);
+        this.maxRadius = properties.maxRadius;
+        this.minRadius = properties.minRadius;
+        this.radius = this.minRadius;
+        this.lifeTime = 0;
+        this.maxLifeTime = properties.maxLifeTime;
+        this.damage = properties.damage;
+        this.isAlive = true;
+    }
+    return Bomb;
+})(Entity);
 //# sourceMappingURL=classes.js.map
