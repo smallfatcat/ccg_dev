@@ -9,10 +9,10 @@ var Entity = (function () {
         this.id = properties.id;
         this.xPos = properties.xPos;
         this.yPos = properties.yPos;
-        this.xVel = 150;
-        this.yVel = -100;
+        this.xVel = 0;
+        this.yVel = 0;
         this.xAcc = 0;
-        this.yAcc = PHYSICS_GRAVITY;
+        this.yAcc = 0;
         this.rotDegrees = 0;
     }
     Entity.prototype.show = function () {

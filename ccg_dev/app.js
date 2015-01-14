@@ -1,5 +1,5 @@
 ﻿/// <reference path="classes.ts" />
-var PHYSICS_TICK = 33;
+var PHYSICS_TICK = 16;
 var PHYSICS_GRAVITY = 0;
 var PHYSICS_FRICTION = 1;
 var PHYSICS_MAXRUN = 120;
@@ -20,6 +20,8 @@ for (var i = 0; i < MAX_BALLS; i++) {
     g_entities.push(ball);
 }
 
+var g_pointer = new Entity({ id: i, xPos: 0, yPos: 0, iconID: 2, name: 'Pointer' });
+
 window.onload = function () {
     render();
     setTimeout(physics, PHYSICS_TICK);
@@ -33,6 +35,8 @@ window.onload = function () {
     });
     $(document).on("mousedown", function (event) {
         console.log('Mouse:' + event.which + ' Xpos:' + event.pageX + ' Ypos:' + event.pageY);
+        g_pointer.xPos = event.pageX - 16;
+        g_pointer.yPos = event.pageY - 16;
     });
     $(document).keyup(function () {
         if (event.which == 32) {
@@ -47,6 +51,8 @@ function render() {
     for (var i = 0; i < MAX_BALLS; i++) {
         html += renderPlayer(g_entities[i]);
     }
+    html += '<div id="mouseHit" class="absolute" style="left: ' + g_pointer.xPos + 'px; top: ' + g_pointer.yPos + 'px;"><img id="imouseHit" style="width: 32px;" src="crosshair.png"></div>';
+
     $('#content').append(html);
     for (var i = 0; i < MAX_BALLS; i++) {
         $('#i' + i).rotate(g_entities[i].rotDegrees);
