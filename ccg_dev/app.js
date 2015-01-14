@@ -1,6 +1,13 @@
-﻿/// <reference path="classes.ts" />
+﻿// Main program
+// Crowd Control Game
+// Authored by David Imrie
+// January 2015
+// Reference files
+/// <reference path="classes.ts" />
 /// <reference path="render.ts" />
 /// <reference path="physics.ts" />
+/// <reference path="jquery.d.ts" />
+// Variables
 var PHYSICS_TICK = 16;
 var PHYSICS_GRAVITY = 0;
 var PHYSICS_FRICTION = 1;
@@ -8,8 +15,6 @@ var PHYSICS_MAXRUN = 120;
 var MAX_BALLS = 20;
 var ELASTICITY_NORMAL = 1;
 
-//var g_player1 = new Player({ id: 1, xPos: 100, yPos: 100, iconID: 1, name: 'David' });
-//var g_player2 = new Player({ id: 2, xPos: 200, yPos: 250, iconID: 2, name: 'Gary' });
 var g_entities = [];
 var g_pause = false;
 var g_pause_released = true;
@@ -22,12 +27,12 @@ for (var i = 0; i < MAX_BALLS; i++) {
     g_entities.push(ball);
 }
 
+// Set up pointer
 var g_pointer = new Entity({ id: i, xPos: 0, yPos: 0, iconID: 2, name: 'Pointer' });
 
+// On window loaded run main program
 window.onload = function () {
-    render();
-    setTimeout(physics, PHYSICS_TICK);
-
+    // Set up event listeners for keyboard and mouse
     $(document).on("keydown", function (event) {
         keyDown(event);
     });
@@ -37,5 +42,11 @@ window.onload = function () {
     $(document).keyup(function (event) {
         keyUp(event);
     });
+
+    // Render scene
+    render();
+
+    // Start physics processing
+    setTimeout(physics, PHYSICS_TICK);
 };
 //# sourceMappingURL=app.js.map

@@ -1,4 +1,5 @@
-﻿function render() {
+﻿// Rendering Functions
+function render() {
     $('#content').empty();
     var html = '';
     for (var i = 0; i < MAX_BALLS; i++) {

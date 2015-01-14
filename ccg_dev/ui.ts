@@ -1,4 +1,6 @@
-﻿function mouseDown(event) {
+﻿// UI functions
+
+function mouseDown(event) {
   console.log('Mouse:' + event.which + ' Xpos:' + event.pageX + ' Ypos:' + event.pageY);
   g_pointer.xPos = event.pageX - 16;
   g_pointer.yPos = event.pageY - 16;

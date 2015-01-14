@@ -1,4 +1,5 @@
-﻿function physics() {
+﻿// Physics and game logic
+function physics() {
     if (!g_pause) {
         for (var i = 0; i < MAX_BALLS; i++) {
             g_entities[i].rotDegrees = physicsPlayer(g_entities[i]);

@@ -1,4 +1,6 @@
-﻿class Entity {
+﻿// Class definitions and interfaces
+
+class Entity {
   id: number;
   xPos: number;
   yPos: number;
