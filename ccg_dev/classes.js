@@ -13,6 +13,7 @@ var Entity = (function () {
         this.yVel = -100;
         this.xAcc = 0;
         this.yAcc = PHYSICS_GRAVITY;
+        this.rotDegrees = 0;
     }
     Entity.prototype.show = function () {
     };

@@ -1,8 +1,9 @@
 ﻿/// <reference path="classes.ts" />
 
 var PHYSICS_TICK: number = 33;
-var PHYSICS_GRAVITY: number = 98;
-var MAX_BALLS: number = 100;
+var PHYSICS_GRAVITY: number = 9.8;
+var MAX_BALLS: number = 200;
+var ELASTICITY_NORMAL: number = 0.8;
 
 //var g_player1 = new Player({ id: 1, xPos: 100, yPos: 100, iconID: 1, name: 'David' });
 //var g_player2 = new Player({ id: 2, xPos: 200, yPos: 250, iconID: 2, name: 'Gary' });
@@ -12,6 +13,7 @@ for (var i = 0;i<MAX_BALLS; i++) {
   var ball: Player = new Player({ id: i, xPos: Math.random() * 400, yPos: Math.random() * 700, iconID: 1, name: String(i) });
   ball.xVel = (Math.random() * 300) - 50;
   ball.yVel = (Math.random() * 300) - 50;
+  ball.rotDegrees = (Math.random() * 360);
   g_entities.push(ball);
 }
 
@@ -22,14 +24,19 @@ window.onload = () => {
 
 function render() {
   $('#content').empty();
+  var html: string = '';
   for (var i = 0; i < MAX_BALLS; i++) {
-    renderPlayer(g_entities[i]);
+    html += renderPlayer(g_entities[i]);
+  }
+  $('#content').append(html);
+  for (var i = 0; i < MAX_BALLS; i++) {
+    $('#i' + i).rotate(g_entities[i].rotDegrees);
   }
 }
 
 function physics() {
   for (var i = 0; i < MAX_BALLS; i++) {
-    physicsPlayer(g_entities[i]);
+    g_entities[i].rotDegrees = physicsPlayer(g_entities[i]);
   }
   setTimeout(physics, PHYSICS_TICK);
   render();
@@ -52,28 +59,28 @@ function physicsPlayer(player: Player) {
 
   var collided;
 
-  collided = collide(t, ux, vx, startx, endx, 800, player.xAcc, 1, 0.9);
+  collided = collide(t, ux, vx, startx, endx, 800, player.xAcc, 1, ELASTICITY_NORMAL);
   endx = collided.end;
   vx = collided.v;
   if (collided.touched) {
     vy *= 0.99;
   }
 
-  collided = collide(t, ux, vx, startx, endx, 0, player.xAcc, -1, 0.9);
+  collided = collide(t, ux, vx, startx, endx, 0, player.xAcc, -1, ELASTICITY_NORMAL);
   endx = collided.end;
   vx = collided.v;
   if (collided.touched) {
     vy *= 0.99;
   }
 
-  collided = collide(t, uy, vy, starty, endy, 800, player.yAcc, 1, 0.9);
+  collided = collide(t, uy, vy, starty, endy, 800, player.yAcc, 1, ELASTICITY_NORMAL);
   endy = collided.end;
   vy = collided.v;
   if (collided.touched) {
     vx *= 0.99;
   }
 
-  collided = collide(t, uy, vy, starty, endy, 0, player.yAcc, -1, 0.9);
+  collided = collide(t, uy, vy, starty, endy, 0, player.yAcc, -1, ELASTICITY_NORMAL);
   endy = collided.end;
   vy = collided.v;
   if (collided.touched) {
@@ -86,6 +93,11 @@ function physicsPlayer(player: Player) {
   player.xVel = vx;
   player.yVel = vy;
 
+  var rotRadians: number = Math.atan2( player.yVel,  player.xVel);
+  var twoPi: number = 6.283185307179586476925286766559;
+  var rotDegrees: number = ((rotRadians / twoPi) * 360) + 90;
+  return rotDegrees;
+
 }
 
 function collide(t: number, u: number, v: number, start: number, end: number, limit: number, acc: number, direction: number, elasticity: number) {
@@ -97,7 +109,7 @@ function collide(t: number, u: number, v: number, start: number, end: number, li
     var collisionTime: number = acc > 0 ? (v - u) / acc : s / u;
     var remainingtime: number = t - collisionTime;
     v *= -1*elasticity;
-    if ((v < -0.01 && direction == 1 )|| (v > 0.01 && direction == -1)) {
+    if ((v < -0.1 && direction == 1 )|| (v > 0.1 && direction == -1)) {
       u = v;
       start = limit;
       end = start + ((u * remainingtime) + (0.5 * remainingtime * remainingtime * acc));
@@ -115,8 +127,12 @@ function collide(t: number, u: number, v: number, start: number, end: number, li
 function renderPlayer(player: Player) {
   var playerDiv: string = '';
   //playerDiv += '<div id="playerDiv' + player.id + '" class="absolute" style="left: ' + player.xPos + 'px; top: ' + player.yPos + 'px;">' + player.name + ' x: ' + player.xPos + ' y: ' + player.yPos + '</div>';
-  playerDiv += '<div id="playerDiv' + player.id + '" class="absolute" style="left: ' + player.xPos + 'px; top: ' + player.yPos + 'px;">' + player.name+'</div>';
+  var imgSrc: string = '';
+  //imgSrc = player.id < (MAX_BALLS / 2) ? 'ball.png' : 'ball_red.png';
+  imgSrc = 'police.png';
+  playerDiv += '<div id="playerDiv' + player.id + '" class="absolute" style="left: ' + player.xPos + 'px; top: ' + player.yPos + 'px;"><img id="i' + player.id + '" style="width: 32px;" src="' + imgSrc + '"></div>';
 
-  $('#content').append(playerDiv);
+  return playerDiv;
+  //$('#content').append(playerDiv);
   //$('#playerDiv').animate({ 'left': player.xPos + 'px', 'top': player.yPos + 'px' });
 }

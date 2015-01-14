@@ -9,6 +9,8 @@
   xAcc: number;
   yAcc: number;
 
+  rotDegrees: number;
+
   constructor(properties: EntProps) {
     this.id = properties.id;
     this.xPos = properties.xPos;
@@ -17,6 +19,7 @@
     this.yVel = -100;
     this.xAcc = 0;
     this.yAcc = PHYSICS_GRAVITY;
+    this.rotDegrees = 0;
   }
 
   show() {
