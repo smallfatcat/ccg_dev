@@ -1,17 +1,21 @@
 ﻿/// <reference path="classes.ts" />
 var PHYSICS_TICK = 33;
-var PHYSICS_GRAVITY = 9.8;
-var MAX_BALLS = 200;
-var ELASTICITY_NORMAL = 0.8;
+var PHYSICS_GRAVITY = 0;
+var PHYSICS_FRICTION = 1;
+var PHYSICS_MAXRUN = 120;
+var MAX_BALLS = 20;
+var ELASTICITY_NORMAL = 1;
 
 //var g_player1 = new Player({ id: 1, xPos: 100, yPos: 100, iconID: 1, name: 'David' });
 //var g_player2 = new Player({ id: 2, xPos: 200, yPos: 250, iconID: 2, name: 'Gary' });
 var g_entities = [];
+var g_pause = false;
+var g_pause_released = true;
 
 for (var i = 0; i < MAX_BALLS; i++) {
     var ball = new Player({ id: i, xPos: Math.random() * 400, yPos: Math.random() * 700, iconID: 1, name: String(i) });
-    ball.xVel = (Math.random() * 300) - 50;
-    ball.yVel = (Math.random() * 300) - 50;
+    ball.xVel = (Math.random() * PHYSICS_MAXRUN) - (PHYSICS_MAXRUN / 2);
+    ball.yVel = (Math.random() * PHYSICS_MAXRUN) - (PHYSICS_MAXRUN / 2);
     ball.rotDegrees = (Math.random() * 360);
     g_entities.push(ball);
 }
@@ -19,6 +23,22 @@ for (var i = 0; i < MAX_BALLS; i++) {
 window.onload = function () {
     render();
     setTimeout(physics, PHYSICS_TICK);
+
+    $(document).on("keydown", function (event) {
+        console.log('Key Pressed:' + event.which);
+        if (g_pause_released && event.which == 32) {
+            g_pause = !g_pause;
+            g_pause_released = false;
+        }
+    });
+    $(document).on("mousedown", function (event) {
+        console.log('Mouse:' + event.which + ' Xpos:' + event.pageX + ' Ypos:' + event.pageY);
+    });
+    $(document).keyup(function () {
+        if (event.which == 32) {
+            g_pause_released = true;
+        }
+    });
 };
 
 function render() {
@@ -34,8 +54,10 @@ function render() {
 }
 
 function physics() {
-    for (var i = 0; i < MAX_BALLS; i++) {
-        g_entities[i].rotDegrees = physicsPlayer(g_entities[i]);
+    if (!g_pause) {
+        for (var i = 0; i < MAX_BALLS; i++) {
+            g_entities[i].rotDegrees = physicsPlayer(g_entities[i]);
+        }
     }
     setTimeout(physics, PHYSICS_TICK);
     render();
@@ -62,28 +84,28 @@ function physicsPlayer(player) {
     endx = collided.end;
     vx = collided.v;
     if (collided.touched) {
-        vy *= 0.99;
+        vy *= PHYSICS_FRICTION;
     }
 
     collided = collide(t, ux, vx, startx, endx, 0, player.xAcc, -1, ELASTICITY_NORMAL);
     endx = collided.end;
     vx = collided.v;
     if (collided.touched) {
-        vy *= 0.99;
+        vy *= PHYSICS_FRICTION;
     }
 
     collided = collide(t, uy, vy, starty, endy, 800, player.yAcc, 1, ELASTICITY_NORMAL);
     endy = collided.end;
     vy = collided.v;
     if (collided.touched) {
-        vx *= 0.99;
+        vx *= PHYSICS_FRICTION;
     }
 
     collided = collide(t, uy, vy, starty, endy, 0, player.yAcc, -1, ELASTICITY_NORMAL);
     endy = collided.end;
     vy = collided.v;
     if (collided.touched) {
-        vx *= 0.99;
+        vx *= PHYSICS_FRICTION;
     }
 
     player.xPos = endx;
