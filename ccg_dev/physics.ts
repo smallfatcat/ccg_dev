@@ -9,6 +9,36 @@ function physics() {
       // Do physics for all test objects 
       physicsPlayer(g_entities[i]);
     }
+
+    var aliveBombs = [];
+    var newID: number = 0;
+    // loop through bombs
+    for (var i = 0; i < g_bombs.length; i++) {
+      if (g_bombs[i].isAlive) {
+        // t is the time elapsed in this tick
+        var t: number = PHYSICS_TICK / 1000;
+        // increment lifetime
+        g_bombs[i].lifeTime += t;
+        // If bombs new lifetime is over maxlife, kill it
+        if (g_bombs[i].lifeTime > g_bombs[i].maxLifeTime) {
+          g_bombs[i].isAlive = false;
+        }
+        // bomb is still alive
+        else {
+          // increase the radius of the bomb
+          var radiusIncrease: number = (g_bombs[i].maxRadius - g_bombs[i].minRadius) / g_bombs[i].maxLifeTime * t;
+          g_bombs[i].radius += radiusIncrease;
+          // check players for damage
+          applyBombDamage(g_bombs[i]);
+          // keep this bomb in the global array, give it a new ID for the new array
+          g_bombs[i].id = newID;
+          newID++;
+          aliveBombs.push(g_bombs[i]);
+        }
+      }
+    }
+    // overwrite bomb array removing dead bombs
+    g_bombs = aliveBombs;
   }
 
   // Call the physics loop again in PHYSICS_TICK milliseconds
@@ -125,3 +155,27 @@ function collide(t: number, u: number, v: number, start: number, end: number, li
   // return the final position, velocity, and if there was a collision with the boundary
   return { 'end': end, 'v': v, 'touched': touched };
 } 
+
+function getDistance(xa: number, ya: number, xb: number, yb: number) {
+  var x: number = xb - xa;
+  var y: number = yb - ya;
+  var distance: number = Math.sqrt((x * x) + (y * y));
+  return distance;
+}
+
+function checkBombHit(bomb: Bomb, player: Player) {
+  var isHit: boolean = false;
+  var distance = getDistance(bomb.xPos, bomb.yPos, player.xPos+16, player.yPos+16);
+  if (distance <= bomb.radius + 16) {
+    isHit = true;
+  }
+  return isHit;
+}
+
+function applyBombDamage(bomb: Bomb) {
+  for (var i = 0; i < MAX_BALLS; i++) {
+    if ( checkBombHit( bomb, g_entities[i] ) ) {
+      g_entities[i].isAlive = false;
+    }
+  }
+}

@@ -8,14 +8,15 @@
 /// <reference path="physics.ts" />
 /// <reference path="jquery.d.ts" />
 // Variables
-var PHYSICS_TICK = 16;
+var PHYSICS_TICK = 33;
 var PHYSICS_GRAVITY = 0;
 var PHYSICS_FRICTION = 1;
-var PHYSICS_MAXRUN = 120;
-var MAX_BALLS = 20;
+var PHYSICS_MAXRUN = 300;
+var MAX_BALLS = 50;
 var ELASTICITY_NORMAL = 1;
 
 var g_entities = [];
+var g_bombs = [];
 var g_pause = false;
 var g_pause_released = true;
 

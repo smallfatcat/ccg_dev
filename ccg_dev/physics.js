@@ -7,6 +7,39 @@ function physics() {
             // Do physics for all test objects
             physicsPlayer(g_entities[i]);
         }
+
+        var aliveBombs = [];
+        var newID = 0;
+
+        for (var i = 0; i < g_bombs.length; i++) {
+            if (g_bombs[i].isAlive) {
+                // t is the time elapsed in this tick
+                var t = PHYSICS_TICK / 1000;
+
+                // increment lifetime
+                g_bombs[i].lifeTime += t;
+
+                // If bombs new lifetime is over maxlife, kill it
+                if (g_bombs[i].lifeTime > g_bombs[i].maxLifeTime) {
+                    g_bombs[i].isAlive = false;
+                } else {
+                    // increase the radius of the bomb
+                    var radiusIncrease = (g_bombs[i].maxRadius - g_bombs[i].minRadius) / g_bombs[i].maxLifeTime * t;
+                    g_bombs[i].radius += radiusIncrease;
+
+                    // check players for damage
+                    applyBombDamage(g_bombs[i]);
+
+                    // keep this bomb in the global array, give it a new ID for the new array
+                    g_bombs[i].id = newID;
+                    newID++;
+                    aliveBombs.push(g_bombs[i]);
+                }
+            }
+        }
+
+        // overwrite bomb array removing dead bombs
+        g_bombs = aliveBombs;
     }
 
     // Call the physics loop again in PHYSICS_TICK milliseconds
@@ -133,5 +166,29 @@ function collide(t, u, v, start, end, limit, acc, direction, elasticity) {
 
     // return the final position, velocity, and if there was a collision with the boundary
     return { 'end': end, 'v': v, 'touched': touched };
+}
+
+function getDistance(xa, ya, xb, yb) {
+    var x = xb - xa;
+    var y = yb - ya;
+    var distance = Math.sqrt((x * x) + (y * y));
+    return distance;
+}
+
+function checkBombHit(bomb, player) {
+    var isHit = false;
+    var distance = getDistance(bomb.xPos, bomb.yPos, player.xPos + 16, player.yPos + 16);
+    if (distance <= bomb.radius + 16) {
+        isHit = true;
+    }
+    return isHit;
+}
+
+function applyBombDamage(bomb) {
+    for (var i = 0; i < MAX_BALLS; i++) {
+        if (checkBombHit(bomb, g_entities[i])) {
+            g_entities[i].isAlive = false;
+        }
+    }
 }
 //# sourceMappingURL=physics.js.map

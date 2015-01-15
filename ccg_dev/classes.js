@@ -15,6 +15,7 @@ var Entity = (function () {
         this.xAcc = 0;
         this.yAcc = 0;
         this.rotDegrees = 0;
+        this.isAlive = true;
     }
     Entity.prototype.show = function () {
     };
@@ -62,7 +63,6 @@ var Bomb = (function (_super) {
         this.lifeTime = 0;
         this.maxLifeTime = properties.maxLifeTime;
         this.damage = properties.damage;
-        this.isAlive = true;
     }
     return Bomb;
 })(Entity);

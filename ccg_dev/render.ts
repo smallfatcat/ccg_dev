@@ -2,29 +2,51 @@
 
 function render() {
   $('#content').empty();
+  // Set up 
   var html: string = '';
+  // Each test object
   for (var i = 0; i < MAX_BALLS; i++) {
-    html += renderPlayer(g_entities[i]);
+    if (g_entities[i].isAlive) {
+      html += renderPlayer(g_entities[i]);
+    }
   }
-  html += '<div id="canvasDiv" class="absolute" style="left: ' + (g_pointer.xPos - 134) + 'px; top: ' + (g_pointer.yPos - 134) + 'px;"><canvas id = "myCanvas" width = "300" height = "300" style = "border:1px solid #d3d3d3;" ></div>';
+  for (i = 0; i < g_bombs.length; i++) {
+    if (g_bombs[i].isAlive) {
+      html += '<div id="bombDiv' + g_bombs[i].id + '" class="absolute" style="left: ' + (g_bombs[i].xPos - 150) + 'px; top: ' + (g_bombs[i].yPos - 150) + 'px;"><canvas id = "bomb' + g_bombs[i].id + '" width = "300" height = "300";" ></div>';
+    }
+  }
   html += '<div id="mouseHit" class="absolute" style="left: ' + g_pointer.xPos + 'px; top: ' + g_pointer.yPos + 'px;"><img id="imouseHit" style="width: 32px;" src="crosshair.png"></div>';
 
+  // write scene to html
   $('#content').append(html);
-  drawCanvas();
+
+  // draw bombs
+  for (i = 0; i < g_bombs.length; i++) {
+    if (g_bombs[i].isAlive) {
+      drawBomb(g_bombs[i]);
+    }
+  }
+  
+  // rotate each test object
   for (var i = 0; i < MAX_BALLS; i++) {
     $('#i' + i).rotate(g_entities[i].rotDegrees);
   }
 }
 
-function drawCanvas() {
-  var c = document.getElementById("myCanvas");
+function drawBomb(bomb: Bomb) {
+  
+  var c = document.getElementById("bomb"+bomb.id);
+  if (c == null) {
+    console.log('break');
+  }
   var ctx = c.getContext("2d");
   ctx.beginPath();
-  ctx.arc(150, 150, 100, 0, 2 * Math.PI);
+  ctx.arc(150, 150, bomb.radius, 0, 2 * Math.PI);
   ctx.stroke();
-  var img = document.getElementById("i0");
-  img.src = 'tile_grey_32.png';
-  ctx.drawImage(img, 0, 0);
+
+  //var img = document.getElementById("i0");
+  //img.src = 'tile_grey_32.png';
+  //ctx.drawImage(img, 0, 0);
 }
 
 function renderPlayer(player: Player) {

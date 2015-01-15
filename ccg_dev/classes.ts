@@ -12,6 +12,7 @@ class Entity {
   yAcc: number;
 
   rotDegrees: number;
+  isAlive: boolean;
 
   constructor(properties: EntProps) {
     this.id = properties.id;
@@ -22,6 +23,7 @@ class Entity {
     this.xAcc = 0;
     this.yAcc = 0;
     this.rotDegrees = 0;
+    this.isAlive = true;
   }
 
   show() {
@@ -67,7 +69,6 @@ class Bomb extends Entity {
   lifeTime: number;
   maxLifeTime: number;
   damage: number;
-  isAlive: boolean;
   constructor(properties: BombProps) {
     super(properties);
     this.maxRadius = properties.maxRadius;
@@ -76,7 +77,6 @@ class Bomb extends Entity {
     this.lifeTime = 0;
     this.maxLifeTime = properties.maxLifeTime;
     this.damage = properties.damage;
-    this.isAlive = true;
   }
 }
 
