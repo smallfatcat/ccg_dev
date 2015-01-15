@@ -4,48 +4,67 @@
 function physics() {
   // Check if game is paused
   if (!g_pause) {
-    // Loop through all test objects
-    for (var i = 0; i < MAX_BALLS; i++) {
-      // Do physics for all test objects 
-      physicsPlayer(g_entities[i]);
-    }
-
-    var aliveBombs = [];
-    var newID: number = 0;
-    // loop through bombs
-    for (var i = 0; i < g_bombs.length; i++) {
-      if (g_bombs[i].isAlive) {
-        // t is the time elapsed in this tick
-        var t: number = PHYSICS_TICK / 1000;
-        // increment lifetime
-        g_bombs[i].lifeTime += t;
-        // If bombs new lifetime is over maxlife, kill it
-        if (g_bombs[i].lifeTime > g_bombs[i].maxLifeTime) {
-          g_bombs[i].isAlive = false;
-        }
-        // bomb is still alive
-        else {
-          // increase the radius of the bomb
-          var radiusIncrease: number = (g_bombs[i].maxRadius - g_bombs[i].minRadius) / g_bombs[i].maxLifeTime * t;
-          g_bombs[i].radius += radiusIncrease;
-          // check players for damage
-          applyBombDamage(g_bombs[i]);
-          // keep this bomb in the global array, give it a new ID for the new array
-          g_bombs[i].id = newID;
-          newID++;
-          aliveBombs.push(g_bombs[i]);
-        }
-      }
-    }
-    // overwrite bomb array removing dead bombs
-    g_bombs = aliveBombs;
+    calcPlayerPhysics();
+    calcBombPhysics();
   }
 
   // Call the physics loop again in PHYSICS_TICK milliseconds
   setTimeout(physics, PHYSICS_TICK);
 
   // Render Scene
-  render();
+  //render();
+  renderPlayArea();
+
+  // Modify Stats
+  var d = new Date();
+  var currentTime = d.getTime();
+  g_stats.lastFrameTime = currentTime - g_stats.currentTime;
+  g_stats.currentTime = currentTime;
+  g_stats.frameCounter++;
+  g_stats.fps = Math.round( 1000 / g_stats.lastFrameTime );
+
+}
+
+function calcBombPhysics() {
+  var aliveBombs = [];
+  var newID: number = 0;
+  // loop through bombs
+  for (var i = 0; i < g_bombs.length; i++) {
+    if (g_bombs[i].isAlive) {
+      // t is the time elapsed in this tick
+      var t: number = PHYSICS_TICK / 1000;
+      // increment lifetime
+      g_bombs[i].lifeTime += t;
+      // If bombs new lifetime is over maxlife, kill it
+      if (g_bombs[i].lifeTime > g_bombs[i].maxLifeTime) {
+        g_bombs[i].isAlive = false;
+      }
+      // bomb is still alive
+      else {
+        // increase the radius of the bomb
+        var radiusIncrease: number = (g_bombs[i].maxRadius - g_bombs[i].minRadius) / g_bombs[i].maxLifeTime * t;
+        g_bombs[i].radius += radiusIncrease;
+        // check players for damage
+        applyBombDamage(g_bombs[i]);
+        // keep this bomb in the global array, give it a new ID for the new array
+        g_bombs[i].id = newID;
+        newID++;
+        aliveBombs.push(g_bombs[i]);
+      }
+    }
+  }
+  // overwrite bomb array removing dead bombs
+  g_bombs = aliveBombs;
+}
+
+function calcPlayerPhysics() {
+  // Loop through all test objects
+  for (var i = 0; i < MAX_BALLS; i++) {
+    if (g_entities[i].isAlive) {
+      // Do physics for all test objects 
+      physicsPlayer(g_entities[i]);
+    }
+  }
 }
 
 // Do physics for player object
@@ -112,6 +131,40 @@ function physicsPlayer(player: Player) {
   player.xVel = vx;
   player.yVel = vy;
   player.rotDegrees = ((rotRadians / twoPi) * 360) + 90;
+
+  // calculate distances
+  player.xAcc = 0;
+  player.yAcc = 0;
+  var newDistances = [];
+  for (i = 0; i < MAX_BALLS; i++) {
+    if (g_entities[i].isAlive && player.id != g_entities[i].id) {
+      var distanceObject = calcGravity(player, g_entities[i]);
+      player.xAcc += distanceObject.vectorToOther.x * distanceObject.gforce / player.mass;
+      player.yAcc += distanceObject.vectorToOther.y * distanceObject.gforce / player.mass;
+      if (player.xAcc > 100 || player.xAcc < -100 || player.yAcc > 100 || player.yAcc < -100) {
+        player.xAcc = 100;
+        player.yAcc = 100;
+      }
+      newDistances.push(distanceObject);
+    }
+  }
+  player.distances = newDistances;
+}
+
+function calcGravity(source: Player, other: Player) {
+  var distanceToOther: number = getDistance(source.xPos, source.yPos, other.xPos, other.yPos);
+  var vectorToOther = { x: ((other.xPos - source.xPos) / distanceToOther), y: ((other.yPos - source.yPos) / distanceToOther) };
+  //  Gravity experiment
+  if (distanceToOther > -10 && distanceToOther < 10) {
+    if (distanceToOther > 0) {
+      distanceToOther = 10;
+    }
+    else {
+      distanceToOther = -10;
+    }
+  }
+  var gravityForceX: number = GRAVITY_CONSTANT * (source.mass * other.mass / (distanceToOther * distanceToOther));
+  return { otherID: other.id, distance: distanceToOther, vectorToOther: vectorToOther, gforce: gravityForceX};
 }
 
 // Check collision with the sides of the box
@@ -165,8 +218,9 @@ function getDistance(xa: number, ya: number, xb: number, yb: number) {
 
 function checkBombHit(bomb: Bomb, player: Player) {
   var isHit: boolean = false;
-  var distance = getDistance(bomb.xPos, bomb.yPos, player.xPos+16, player.yPos+16);
-  if (distance <= bomb.radius + 16) {
+  var checkRadius: number = bomb.radius+16;
+  var distance = getDistance(bomb.xPos, bomb.yPos, player.xPos, player.yPos);
+  if (distance <= checkRadius) {
     isHit = true;
   }
   return isHit;
@@ -174,8 +228,11 @@ function checkBombHit(bomb: Bomb, player: Player) {
 
 function applyBombDamage(bomb: Bomb) {
   for (var i = 0; i < MAX_BALLS; i++) {
-    if ( checkBombHit( bomb, g_entities[i] ) ) {
-      g_entities[i].isAlive = false;
+    if (g_entities[i].isAlive) {
+      if (checkBombHit(bomb, g_entities[i])) {
+        g_entities[i].isAlive = false;
+        g_stats.kills++;
+      }
     }
   }
 }

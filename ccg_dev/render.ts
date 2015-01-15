@@ -1,5 +1,44 @@
 ﻿// Rendering Functions
 
+function renderPlayArea() {
+  // If this is the first time, create the canvas and write it to the page
+  if (!g_playAreaCanvasCreated) {
+    $('#content').empty();
+    var html: string = g_playArea.generateHtml();
+    // write scene to html
+    $('#content').append(html);
+    g_playAreaCanvasCreated = true;
+  }
+
+  // Use canvas
+
+  var c = document.getElementById(g_playArea.containerID);
+  var ctx = c.getContext("2d");
+
+  ctx.clearRect(0, 0, g_playArea.width, g_playArea.height);
+
+  // Each Alive entity
+  for (var i = 0; i < MAX_BALLS; i++) {
+    if (g_entities[i].isAlive) {
+      drawCircle( ctx, g_entities[i].xPos, g_entities[i].yPos, 16 );
+    }
+  }
+
+  // Each Bomb
+  for (i = 0; i < g_bombs.length; i++) {
+    if (g_bombs[i].isAlive) {
+      drawCircle(ctx, g_bombs[i].xPos, g_bombs[i].yPos, g_bombs[i].radius);
+    }
+  }
+
+}
+
+function drawCircle(ctx, x: number, y: number, radius: number ) {
+  ctx.beginPath();
+  ctx.arc(x, y, radius, 0, 2 * Math.PI);
+  ctx.stroke();
+}
+
 function render() {
   $('#content').empty();
   // Set up 
@@ -10,11 +49,14 @@ function render() {
       html += renderPlayer(g_entities[i]);
     }
   }
+  // Each Bomb
   for (i = 0; i < g_bombs.length; i++) {
     if (g_bombs[i].isAlive) {
       html += '<div id="bombDiv' + g_bombs[i].id + '" class="absolute" style="left: ' + (g_bombs[i].xPos - 150) + 'px; top: ' + (g_bombs[i].yPos - 150) + 'px;"><canvas id = "bomb' + g_bombs[i].id + '" width = "300" height = "300";" ></div>';
     }
   }
+
+  // Mouse pointer
   html += '<div id="mouseHit" class="absolute" style="left: ' + g_pointer.xPos + 'px; top: ' + g_pointer.yPos + 'px;"><img id="imouseHit" style="width: 32px;" src="crosshair.png"></div>';
 
   // write scene to html

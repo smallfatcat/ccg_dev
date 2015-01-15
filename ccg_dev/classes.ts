@@ -1,16 +1,73 @@
 ﻿// Class definitions and interfaces
 
+// PLayArea Class
+class PlayArea {
+  xPos: number;
+  yPos: number;
+  width: number;
+  height: number;
+  containerID: string;
+  constructor(properties: PlayAreaProps) {
+    this.xPos = properties.xPos;
+    this.yPos = properties.yPos;
+    this.width = properties.width;
+    this.height = properties.height;
+    this.containerID = properties.containerID;
+  }
+  generateHtml() {
+    var html: string = '';
+    html += '';
+    html += '<div id="' + this.containerID + 'div" class="absolute" style="left: ' + 0 + 'px; top: ' + 0 + 'px;"><canvas id = "' + this.containerID + '" width = "' + this.width + '" height = "' + this.height+'";" ></div>';
+    return html;
+  }
+}
+
+interface PlayAreaProps {
+  xPos: number;
+  yPos: number;
+  width: number;
+  height: number;
+  containerID: string;
+}
+
+// Stats Class
+class Stats {
+  startTime: number;
+  frameCounter: number;
+  currentTime: number;
+  fps: number;
+  lastFrameTime: number;
+  kills: number;
+  playersAlive: number;
+  bombsUsed: number;
+  constructor(properties: StatsProps) {
+    this.startTime = properties.startTime;
+    this.frameCounter = 0;
+    this.currentTime = properties.startTime;
+    this.fps = 0;
+    this.lastFrameTime = 0;
+    this.kills = 0;
+    this.playersAlive = MAX_BALLS;
+    this.bombsUsed = 0;
+  }
+}
+
+interface StatsProps {
+  startTime: number;
+  //frameCounter: number;
+  //currentTime: number;
+  //fps: number;
+}
+
+// Entity Class
 class Entity {
   id: number;
   xPos: number;
   yPos: number;
-
   xVel: number;
   yVel: number;
-
   xAcc: number;
   yAcc: number;
-
   rotDegrees: number;
   isAlive: boolean;
 
@@ -27,22 +84,24 @@ class Entity {
   }
 
   show() {
-
   }
 
   hide() {
-
   }
-
   move(x: number, y: number) {
     this.xPos += x;
     this.yPos += y;
   }
-
   moveTo(x: number, y: number) {
     this.xPos = x;
     this.yPos = y;
   }
+}
+
+interface EntProps {
+  id: number;
+  xPos: number;
+  yPos: number;
 }
 
 class Prop extends Entity {
@@ -53,15 +112,30 @@ class Prop extends Entity {
   }
 }
 
+interface PropProps extends EntProps {
+  iconID: number;
+}
+
 class Player extends Entity {
+  distances: number[];
   iconID: number;
   name: string;
+  mass: number;
   constructor(properties: PlayerProps) {
     super(properties);
+    this.distances = [];
     this.name = properties.name;
     this.iconID = properties.iconID;
+    this.mass = properties.mass;
   }
 }
+
+interface PlayerProps extends EntProps {
+  iconID: number;
+  name: string;
+  mass: number;
+} 
+
 class Bomb extends Entity {
   maxRadius: number;
   minRadius: number;
@@ -80,24 +154,13 @@ class Bomb extends Entity {
   }
 }
 
-interface EntProps {
-  id: number;
-  xPos: number;
-  yPos: number;
-}
-
-interface PropProps extends EntProps {
-  iconID: number;
-}
-
-interface PlayerProps extends EntProps {
-  iconID: number;
-  name: string;
-} 
-
 interface BombProps extends EntProps {
   maxRadius: number;
   minRadius: number;
   maxLifeTime: number;
   damage: number;
 }
+
+
+
+
