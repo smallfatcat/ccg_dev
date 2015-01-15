@@ -8,8 +8,7 @@ var __extends = this.__extends || function (d, b) {
 // PLayArea Class
 var PlayArea = (function () {
     function PlayArea(properties) {
-        this.xPos = properties.xPos;
-        this.yPos = properties.yPos;
+        this.pos = properties.pos;
         this.width = properties.width;
         this.height = properties.height;
         this.containerID = properties.containerID;
@@ -42,12 +41,9 @@ var Stats = (function () {
 var Entity = (function () {
     function Entity(properties) {
         this.id = properties.id;
-        this.xPos = properties.xPos;
-        this.yPos = properties.yPos;
-        this.xVel = 0;
-        this.yVel = 0;
-        this.xAcc = 0;
-        this.yAcc = 0;
+        this.pos = properties.pos;
+        this.vel = { x: 0, y: 0 };
+        this.acc = { x: 0, y: 0 };
         this.rotDegrees = 0;
         this.isAlive = true;
     }
@@ -56,13 +52,13 @@ var Entity = (function () {
 
     Entity.prototype.hide = function () {
     };
-    Entity.prototype.move = function (x, y) {
-        this.xPos += x;
-        this.yPos += y;
+    Entity.prototype.move = function (pos) {
+        this.pos.x += pos.x;
+        this.pos.y += pos.y;
     };
-    Entity.prototype.moveTo = function (x, y) {
-        this.xPos = x;
-        this.yPos = y;
+    Entity.prototype.moveTo = function (pos) {
+        this.pos.x = pos.x;
+        this.pos.y = pos.y;
     };
     return Entity;
 })();

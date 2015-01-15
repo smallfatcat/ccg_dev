@@ -2,14 +2,12 @@
 
 // PLayArea Class
 class PlayArea {
-  xPos: number;
-  yPos: number;
+  pos: Vector2D;
   width: number;
   height: number;
   containerID: string;
   constructor(properties: PlayAreaProps) {
-    this.xPos = properties.xPos;
-    this.yPos = properties.yPos;
+    this.pos = properties.pos;
     this.width = properties.width;
     this.height = properties.height;
     this.containerID = properties.containerID;
@@ -23,8 +21,7 @@ class PlayArea {
 }
 
 interface PlayAreaProps {
-  xPos: number;
-  yPos: number;
+  pos: Vector2D;
   width: number;
   height: number;
   containerID: string;
@@ -62,23 +59,17 @@ interface StatsProps {
 // Entity Class
 class Entity {
   id: number;
-  xPos: number;
-  yPos: number;
-  xVel: number;
-  yVel: number;
-  xAcc: number;
-  yAcc: number;
+  pos: Vector2D;
+  vel: Vector2D;
+  acc: Vector2D;
   rotDegrees: number;
   isAlive: boolean;
 
   constructor(properties: EntProps) {
     this.id = properties.id;
-    this.xPos = properties.xPos;
-    this.yPos = properties.yPos;
-    this.xVel = 0;
-    this.yVel = 0;
-    this.xAcc = 0;
-    this.yAcc = 0;
+    this.pos = properties.pos;
+    this.vel = { x: 0, y: 0 };
+    this.acc = { x: 0, y: 0 };
     this.rotDegrees = 0;
     this.isAlive = true;
   }
@@ -88,20 +79,19 @@ class Entity {
 
   hide() {
   }
-  move(x: number, y: number) {
-    this.xPos += x;
-    this.yPos += y;
+  move(pos: Vector2D) {
+    this.pos.x += pos.x;
+    this.pos.y += pos.y;
   }
-  moveTo(x: number, y: number) {
-    this.xPos = x;
-    this.yPos = y;
+  moveTo(pos: Vector2D) {
+    this.pos.x = pos.x;
+    this.pos.y = pos.y;
   }
 }
 
 interface EntProps {
   id: number;
-  xPos: number;
-  yPos: number;
+  pos: Vector2D;
 }
 
 class Prop extends Entity {
@@ -161,6 +151,10 @@ interface BombProps extends EntProps {
   damage: number;
 }
 
+interface Vector2D {
+  x: number;
+  y: number;
+}
 
 
 

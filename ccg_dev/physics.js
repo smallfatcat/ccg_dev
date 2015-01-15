@@ -2,7 +2,7 @@
 // Main physics loop
 function physics() {
     // Check if game is paused
-    if (!g_pause) {
+    if (!gPause) {
         calcPlayerPhysics();
         calcBombPhysics();
     }
@@ -17,52 +17,52 @@ function physics() {
     // Modify Stats
     var d = new Date();
     var currentTime = d.getTime();
-    g_stats.lastFrameTime = currentTime - g_stats.currentTime;
-    g_stats.currentTime = currentTime;
-    g_stats.frameCounter++;
-    g_stats.fps = Math.round(1000 / g_stats.lastFrameTime);
+    gStats.lastFrameTime = currentTime - gStats.currentTime;
+    gStats.currentTime = currentTime;
+    gStats.frameCounter++;
+    gStats.fps = Math.round(1000 / gStats.lastFrameTime);
 }
 
 function calcBombPhysics() {
     var aliveBombs = [];
     var newID = 0;
 
-    for (var i = 0; i < g_bombs.length; i++) {
-        if (g_bombs[i].isAlive) {
+    for (var i = 0; i < gBombs.length; i++) {
+        if (gBombs[i].isAlive) {
             // t is the time elapsed in this tick
             var t = PHYSICS_TICK / 1000;
 
             // increment lifetime
-            g_bombs[i].lifeTime += t;
+            gBombs[i].lifeTime += t;
 
             // If bombs new lifetime is over maxlife, kill it
-            if (g_bombs[i].lifeTime > g_bombs[i].maxLifeTime) {
-                g_bombs[i].isAlive = false;
+            if (gBombs[i].lifeTime > gBombs[i].maxLifeTime) {
+                gBombs[i].isAlive = false;
             } else {
                 // increase the radius of the bomb
-                var radiusIncrease = (g_bombs[i].maxRadius - g_bombs[i].minRadius) / g_bombs[i].maxLifeTime * t;
-                g_bombs[i].radius += radiusIncrease;
+                var radiusIncrease = (gBombs[i].maxRadius - gBombs[i].minRadius) / gBombs[i].maxLifeTime * t;
+                gBombs[i].radius += radiusIncrease;
 
                 // check players for damage
-                applyBombDamage(g_bombs[i]);
+                applyBombDamage(gBombs[i]);
 
                 // keep this bomb in the global array, give it a new ID for the new array
-                g_bombs[i].id = newID;
+                gBombs[i].id = newID;
                 newID++;
-                aliveBombs.push(g_bombs[i]);
+                aliveBombs.push(gBombs[i]);
             }
         }
     }
 
     // overwrite bomb array removing dead bombs
-    g_bombs = aliveBombs;
+    gBombs = aliveBombs;
 }
 
 function calcPlayerPhysics() {
     for (var i = 0; i < MAX_BALLS; i++) {
-        if (g_entities[i].isAlive) {
+        if (gEntities[i].isAlive) {
             // Do physics for all test objects
-            physicsPlayer(g_entities[i]);
+            physicsPlayer(gEntities[i]);
         }
     }
 }
@@ -76,47 +76,47 @@ function physicsPlayer(player) {
 
     // ux/uy are the initial velocities, vx/vy final velocities, startx/starty are the initial coords, endx/endy are the final coords
     // Set initial velocity
-    var ux = player.xVel;
-    var uy = player.yVel;
+    var ux = player.vel.x;
+    var uy = player.vel.y;
 
     // calculate final velocity
-    var vx = ux + (player.xAcc * t);
-    var vy = uy + (player.yAcc * t);
+    var vx = ux + (player.acc.x * t);
+    var vy = uy + (player.acc.y * t);
 
     // Set initital coords
-    var startx = player.xPos;
-    var starty = player.yPos;
+    var startx = player.pos.x;
+    var starty = player.pos.y;
 
     // Calculate final coords
-    var endx = startx + ((ux * t) + (0.5 * t * t * player.xAcc));
-    var endy = starty + ((uy * t) + (0.5 * t * t * player.yAcc));
+    var endx = startx + ((ux * t) + (0.5 * t * t * player.acc.x));
+    var endy = starty + ((uy * t) + (0.5 * t * t * player.acc.y));
 
     // Set up a collision result object
     var collided;
 
     // Do collisions on each side of the box - to be changed, testing only
-    collided = collide(t, ux, vx, startx, endx, 800, player.xAcc, 1, ELASTICITY_NORMAL);
+    collided = collide(t, ux, vx, startx, endx, 800, player.acc.x, 1, ELASTICITY_NORMAL);
     endx = collided.end;
     vx = collided.v;
     if (collided.touched) {
         vy *= PHYSICS_FRICTION;
     }
 
-    collided = collide(t, ux, vx, startx, endx, 0, player.xAcc, -1, ELASTICITY_NORMAL);
+    collided = collide(t, ux, vx, startx, endx, 0, player.acc.x, -1, ELASTICITY_NORMAL);
     endx = collided.end;
     vx = collided.v;
     if (collided.touched) {
         vy *= PHYSICS_FRICTION;
     }
 
-    collided = collide(t, uy, vy, starty, endy, 800, player.yAcc, 1, ELASTICITY_NORMAL);
+    collided = collide(t, uy, vy, starty, endy, 800, player.acc.y, 1, ELASTICITY_NORMAL);
     endy = collided.end;
     vy = collided.v;
     if (collided.touched) {
         vx *= PHYSICS_FRICTION;
     }
 
-    collided = collide(t, uy, vy, starty, endy, 0, player.yAcc, -1, ELASTICITY_NORMAL);
+    collided = collide(t, uy, vy, starty, endy, 0, player.acc.y, -1, ELASTICITY_NORMAL);
     endy = collided.end;
     vy = collided.v;
     if (collided.touched) {
@@ -124,28 +124,28 @@ function physicsPlayer(player) {
     }
 
     // Calculate new direction angle
-    var rotRadians = Math.atan2(player.yVel, player.xVel);
+    var rotRadians = Math.atan2(player.vel.y, player.vel.x);
     var twoPi = 6.283185307179586476925286766559;
 
     // Store new values
-    player.xPos = endx;
-    player.yPos = endy;
-    player.xVel = vx;
-    player.yVel = vy;
+    player.pos.x = endx;
+    player.pos.y = endy;
+    player.vel.x = vx;
+    player.vel.y = vy;
     player.rotDegrees = ((rotRadians / twoPi) * 360) + 90;
 
     // calculate distances
-    player.xAcc = 0;
-    player.yAcc = 0;
+    player.acc.x = 0;
+    player.acc.y = 0;
     var newDistances = [];
     for (i = 0; i < MAX_BALLS; i++) {
-        if (g_entities[i].isAlive && player.id != g_entities[i].id) {
-            var distanceObject = calcGravity(player, g_entities[i]);
-            player.xAcc += distanceObject.vectorToOther.x * distanceObject.gforce / player.mass;
-            player.yAcc += distanceObject.vectorToOther.y * distanceObject.gforce / player.mass;
-            if (player.xAcc > 100 || player.xAcc < -100 || player.yAcc > 100 || player.yAcc < -100) {
-                player.xAcc = 100;
-                player.yAcc = 100;
+        if (gEntities[i].isAlive && player.id != gEntities[i].id) {
+            var distanceObject = calcGravity(player, gEntities[i]);
+            player.acc.x += distanceObject.vectorToOther.x * distanceObject.gforce / player.mass;
+            player.acc.y += distanceObject.vectorToOther.y * distanceObject.gforce / player.mass;
+            if (player.acc.x > 100 || player.acc.x < -100 || player.acc.y > 100 || player.acc.y < -100) {
+                player.acc.x = 100;
+                player.acc.y = 100;
             }
             newDistances.push(distanceObject);
         }
@@ -154,8 +154,8 @@ function physicsPlayer(player) {
 }
 
 function calcGravity(source, other) {
-    var distanceToOther = getDistance(source.xPos, source.yPos, other.xPos, other.yPos);
-    var vectorToOther = { x: ((other.xPos - source.xPos) / distanceToOther), y: ((other.yPos - source.yPos) / distanceToOther) };
+    var distanceToOther = getDistance(source.pos.x, source.pos.y, other.pos.x, other.pos.y);
+    var vectorToOther = { x: ((other.pos.x - source.pos.x) / distanceToOther), y: ((other.pos.y - source.pos.y) / distanceToOther) };
 
     //  Gravity experiment
     if (distanceToOther > -10 && distanceToOther < 10) {
@@ -230,7 +230,7 @@ function getDistance(xa, ya, xb, yb) {
 function checkBombHit(bomb, player) {
     var isHit = false;
     var checkRadius = bomb.radius + 16;
-    var distance = getDistance(bomb.xPos, bomb.yPos, player.xPos, player.yPos);
+    var distance = getDistance(bomb.pos.x, bomb.pos.y, player.pos.x, player.pos.y);
     if (distance <= checkRadius) {
         isHit = true;
     }
@@ -239,10 +239,10 @@ function checkBombHit(bomb, player) {
 
 function applyBombDamage(bomb) {
     for (var i = 0; i < MAX_BALLS; i++) {
-        if (g_entities[i].isAlive) {
-            if (checkBombHit(bomb, g_entities[i])) {
-                g_entities[i].isAlive = false;
-                g_stats.kills++;
+        if (gEntities[i].isAlive) {
+            if (checkBombHit(bomb, gEntities[i])) {
+                gEntities[i].isAlive = false;
+                gStats.kills++;
             }
         }
     }
