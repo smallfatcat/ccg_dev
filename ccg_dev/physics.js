@@ -5,6 +5,11 @@ function physics() {
     if (!gPause) {
         calcPlayerPhysics();
         calcBombPhysics();
+        if (gApproachTimerFlag) {
+            makeAllThingsApproachEnemies();
+            gApproachTimerFlag = false;
+            setTimeout(setApproachTimerFlag, 1000);
+        }
     }
 
     // Call the physics loop again in PHYSICS_TICK milliseconds
@@ -21,6 +26,11 @@ function physics() {
     gStats.currentTime = currentTime;
     gStats.frameCounter++;
     gStats.fps = Math.round(1000 / gStats.lastFrameTime);
+}
+
+function setApproachTimerFlag() {
+    gApproachTimerFlag = true;
+    console.log('setApproachTimerFlag hit');
 }
 
 function calcBombPhysics() {
@@ -65,15 +75,107 @@ function calcPlayerPhysics() {
             physicsPlayer(gEntities[i]);
         }
     }
-    doCollisionChecks();
 
-    for (var i = 1; i < MAX_BALLS; i++) {
-        if (gEntities[i].isAlive) {
-            // Do physics for all test objects
-            if (checkRadiusCollision(gEntities[0], gEntities[i])) {
-                gEntities[i].isAlive = false;
+    // calculate collisions and store them in global array
+    gCollisions = doCollisionChecks();
+
+    for (var i = 0; i < gCollisions.length; i++) {
+        // If entity is in fight mode, check fight priority
+        var source = gEntities[gCollisions[i].sourceID];
+        var target = gEntities[gCollisions[i].targetID];
+        setFighting(source, target);
+    }
+
+    // Perform Fights
+    performFights();
+}
+
+function performFights() {
+    for (var i = 0; i < gEntities.length; i++) {
+        var player = gEntities[i];
+        if (player.isFighting) {
+            if (attackRoll(50)) {
+                gEntities[player.fight.targetID].health -= 1;
+                if (gEntities[player.fight.targetID].health < 1) {
+                    gEntities[player.fight.targetID].isAlive = false;
+                    player.isFighting = false;
+                    gEntities[player.fight.targetID].isFighting = false;
+                    player.pointAt(nearestEnemyPos(player.pos, player.team));
+                    player.moveForward();
+                }
             }
         }
+    }
+}
+
+function attackRoll(percentage) {
+    var roll = Math.random() * 100;
+    if (roll < percentage) {
+        return true;
+    }
+    return false;
+}
+
+function setFighting(source, target) {
+    if (source.team != target.team) {
+        if (source.isFighting) {
+            if (source.fight.targetHealth > target.health) {
+                source.stop();
+                source.pointAt(target.pos);
+                source.fight.targetID = target.id;
+                source.fight.targetHealth = target.health;
+                source.fight.targetDirection = getVectorAB(source.pos, target.pos);
+            }
+        } else {
+            source.stop();
+            source.pointAt(target.pos);
+            source.isFighting = true;
+            source.fight.targetID = target.id;
+            source.fight.targetHealth = target.health;
+            source.fight.targetDirection = getVectorAB(source.pos, target.pos);
+        }
+        if (target.isFighting) {
+            if (target.fight.targetHealth > source.health) {
+                target.stop();
+                target.pointAt(source.pos);
+                target.fight.targetID = source.id;
+                target.fight.targetHealth = source.health;
+                target.fight.targetDirection = getVectorAB(target.pos, source.pos);
+            }
+        } else {
+            target.stop();
+            target.pointAt(source.pos);
+            target.isFighting = true;
+            target.fight.targetID = source.id;
+            target.fight.targetHealth = source.health;
+            target.fight.targetDirection = getVectorAB(target.pos, source.pos);
+        }
+    }
+}
+
+function nearestEnemyPos(myPos, myTeam) {
+    var enemyPos = { x: 400, y: 400 };
+    var distance = 0;
+    var minDistance = -1;
+    for (var i = 0; i < gEntities.length; i++) {
+        var enemy = gEntities[i];
+        if (enemy.isAlive) {
+            if (enemy.team != myTeam) {
+                distance = getDistance(myPos, enemy.pos);
+                if (distance < minDistance || minDistance == -1) {
+                    minDistance = distance;
+                    enemyPos = enemy.pos;
+                }
+            }
+        }
+    }
+    return enemyPos;
+}
+
+function makeAllThingsApproachEnemies() {
+    for (var i = 0; i < gEntities.length; i++) {
+        gEntities[i].pointAt(nearestEnemyPos(gEntities[i].pos, gEntities[i].team));
+        gEntities[i].moveForward();
     }
 }
 
@@ -111,19 +213,16 @@ function physicsPlayer(player) {
     // Calculate final coords
     var end = calcFinalCoords(start, u, player.acc, t);
 
-    // Set up a collision result object
-    // Do collisions on each side of the box - to be changed, testing only
-    //var collideResult = checkSideCollision(u, v, start, end, player.acc, t);
-    //v = collideResult.v;
-    //end = collideResult.end;
-    // Calculate new direction angle
-    var rotRadians = Math.atan2(player.vel.y, player.vel.x);
-    var twoPi = 6.283185307179586476925286766559;
-
     // Store new values
     player.pos = end;
     player.vel = v;
-    player.rotDegrees = ((rotRadians / twoPi) * 360) + 90;
+
+    // if there is no velocity to establish a direction
+    if (!(player.vel.x == 0) && !(player.vel.y == 0)) {
+        // Calculate new direction angle
+        var rotRadians = Math.atan2(player.vel.y, player.vel.x);
+        player.rotDegrees = ((rotRadians / (Math.PI * 2)) * 360) + 90;
+    }
 
     // Reset distance info
     player.acc = { x: 0, y: 0 };
@@ -148,6 +247,7 @@ function applyGravity(player, distanceObject) {
 }
 
 function doCollisionChecks() {
+    var collisions = [];
     var players = [];
     players = gEntities.slice(0);
 
@@ -157,32 +257,39 @@ function doCollisionChecks() {
             for (var j = 0; j < players.length; j++) {
                 var target = players[j];
                 if (target.isAlive && source.isAlive) {
-                    var distanceObject = calcGravity(source, target);
-                    applyGravity(source, distanceObject);
-                    var invertedDistanceObject = storeDistanceObject(source, target, distanceObject);
-                    applyGravity(target, invertedDistanceObject);
+                    //var distanceObject: DistanceObject = calcGravity(source, target);
+                    //applyGravity(source, distanceObject);
+                    //var invertedDistanceObject: DistanceObject = storeDistanceObject(source, target, distanceObject);
+                    //applyGravity(target, invertedDistanceObject);
                     var isHit = checkRadiusCollision(source, target);
                     if (isHit) {
-                        // Calculate initial momentum
-                        var momentum = { x: 0, y: 0 };
-                        momentum.x = (source.vel.x * source.mass) + (target.vel.x * target.mass);
-                        momentum.y = (source.vel.y * source.mass) + (target.vel.y * target.mass);
-                        var newMass = source.mass + target.mass;
-                        if (target.mass <= source.mass) {
-                            // Kill Target
-                            target.isAlive = false;
-                            source.vel.x = momentum.x / newMass;
-                            source.vel.y = momentum.y / newMass;
-                        }
-                        if (target.mass > source.mass) {
-                            source.isAlive = false;
-                            target.vel.x = momentum.x / newMass;
-                            target.vel.y = momentum.y / newMass;
-                        }
+                        //combine(source, target);
+                        var collision = { sourceID: source.id, targetID: target.id };
+                        collisions.push(collision);
                     }
                 }
             }
         }
+    }
+    return collisions;
+}
+
+function combine(source, target) {
+    // Calculate initial momentum
+    var momentum = { x: 0, y: 0 };
+    momentum.x = (source.vel.x * source.mass) + (target.vel.x * target.mass);
+    momentum.y = (source.vel.y * source.mass) + (target.vel.y * target.mass);
+    var newMass = source.mass + target.mass;
+    if (target.mass <= source.mass) {
+        // Kill Target
+        target.isAlive = false;
+        source.vel.x = momentum.x / newMass;
+        source.vel.y = momentum.y / newMass;
+    }
+    if (target.mass > source.mass) {
+        source.isAlive = false;
+        target.vel.x = momentum.x / newMass;
+        target.vel.y = momentum.y / newMass;
     }
 }
 

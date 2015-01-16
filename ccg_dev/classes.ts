@@ -114,6 +114,10 @@ class Player extends Entity {
   name: string;
   mass: number;
   collisionRadius: number;
+  health: number;
+  fight: Fight;
+  isFighting: boolean;
+  team: number;
   constructor(properties: PlayerProps) {
     super(properties);
     this.distances = [];
@@ -121,6 +125,10 @@ class Player extends Entity {
     this.iconID = properties.iconID;
     this.mass = properties.mass;
     this.collisionRadius = properties.collisionRadius;
+    this.health = 100;
+    this.fight = { targetID: -1, targetDirection: { x: 0, y: 0 }, targetHealth: 100 };
+    this.isFighting = false;
+    this.team = 0;
   }
 
   moveTowards(pos: Vector2D) {
@@ -128,6 +136,23 @@ class Player extends Entity {
     normalize(towardsVector);
     this.vel.x = towardsVector.x * this.speed;
     this.vel.y = towardsVector.y * this.speed;
+  }
+
+  pointAt(pos: Vector2D) {
+    var towardsVector: Vector2D = getVectorAB(this.pos, pos);
+    var rotRadians: number = Math.atan2(towardsVector.y, towardsVector.x);
+    this.rotDegrees = ((rotRadians / (Math.PI * 2)) * 360) + 90;
+  }
+
+  moveForward() {
+    var rotRadians: number = ((this.rotDegrees - 90) / 360) * (Math.PI * 2);
+    this.vel.x = Math.cos(rotRadians) * this.speed;
+    this.vel.y = Math.sin(rotRadians) * this.speed;
+  }
+
+  stop() {
+    this.vel.x = 0;
+    this.vel.y = 0;
   }
 }
 
@@ -173,6 +198,17 @@ interface DistanceObject {
   distance: number;
   vectorToOther: Vector2D;
   gforce: number;
+}
+
+interface Collision {
+  sourceID: number;
+  targetID: number;
+}
+
+interface Fight {
+  targetID: number;
+  targetHealth: number;
+  targetDirection: Vector2D;
 }
 
 

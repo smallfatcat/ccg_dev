@@ -21,7 +21,7 @@ function renderPlayArea() {
   // Each Alive entity
   for (var i = 0; i < MAX_BALLS; i++) {
     if (gEntities[i].isAlive) {
-      drawCircle(ctx, gEntities[i].pos.x, gEntities[i].pos.y, gEntities[i].collisionRadius);
+      drawCircle(ctx, gEntities[i].pos.x, gEntities[i].pos.y, gEntities[i].collisionRadius, gEntities[i].team == 0 ? 'red':'blue');
       drawImage(ctx, gEntities[i].pos.x, gEntities[i].pos.y, gEntities[i].rotDegrees, 32, 'policeimg');
     }
   }
@@ -29,16 +29,16 @@ function renderPlayArea() {
   // Each Bomb
   for (i = 0; i < gBombs.length; i++) {
     if (gBombs[i].isAlive) {
-      drawCircle(ctx, gBombs[i].pos.x, gBombs[i].pos.y, gBombs[i].radius);
+      drawCircle(ctx, gBombs[i].pos.x, gBombs[i].pos.y, gBombs[i].radius, 'red');
     }
   }
 
 }
 
-function drawCircle(ctx, x: number, y: number, radius: number ) {
+function drawCircle(ctx, x: number, y: number, radius: number, color: string) {
   ctx.beginPath();
   ctx.arc(x, y, radius, 0, 2 * Math.PI);
-  ctx.fillStyle = "red";
+  ctx.fillStyle = color;
   ctx.fill();
   ctx.stroke();
 }

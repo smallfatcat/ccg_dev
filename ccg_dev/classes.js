@@ -82,12 +82,33 @@ var Player = (function (_super) {
         this.iconID = properties.iconID;
         this.mass = properties.mass;
         this.collisionRadius = properties.collisionRadius;
+        this.health = 100;
+        this.fight = { targetID: -1, targetDirection: { x: 0, y: 0 }, targetHealth: 100 };
+        this.isFighting = false;
+        this.team = 0;
     }
     Player.prototype.moveTowards = function (pos) {
         var towardsVector = getVectorAB(this.pos, pos);
         normalize(towardsVector);
         this.vel.x = towardsVector.x * this.speed;
         this.vel.y = towardsVector.y * this.speed;
+    };
+
+    Player.prototype.pointAt = function (pos) {
+        var towardsVector = getVectorAB(this.pos, pos);
+        var rotRadians = Math.atan2(towardsVector.y, towardsVector.x);
+        this.rotDegrees = ((rotRadians / (Math.PI * 2)) * 360) + 90;
+    };
+
+    Player.prototype.moveForward = function () {
+        var rotRadians = ((this.rotDegrees - 90) / 360) * (Math.PI * 2);
+        this.vel.x = Math.cos(rotRadians) * this.speed;
+        this.vel.y = Math.sin(rotRadians) * this.speed;
+    };
+
+    Player.prototype.stop = function () {
+        this.vel.x = 0;
+        this.vel.y = 0;
     };
     return Player;
 })(Entity);

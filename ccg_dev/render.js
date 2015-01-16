@@ -19,22 +19,22 @@ function renderPlayArea() {
 
     for (var i = 0; i < MAX_BALLS; i++) {
         if (gEntities[i].isAlive) {
-            drawCircle(ctx, gEntities[i].pos.x, gEntities[i].pos.y, gEntities[i].collisionRadius);
+            drawCircle(ctx, gEntities[i].pos.x, gEntities[i].pos.y, gEntities[i].collisionRadius, gEntities[i].team == 0 ? 'red' : 'blue');
             drawImage(ctx, gEntities[i].pos.x, gEntities[i].pos.y, gEntities[i].rotDegrees, 32, 'policeimg');
         }
     }
 
     for (i = 0; i < gBombs.length; i++) {
         if (gBombs[i].isAlive) {
-            drawCircle(ctx, gBombs[i].pos.x, gBombs[i].pos.y, gBombs[i].radius);
+            drawCircle(ctx, gBombs[i].pos.x, gBombs[i].pos.y, gBombs[i].radius, 'red');
         }
     }
 }
 
-function drawCircle(ctx, x, y, radius) {
+function drawCircle(ctx, x, y, radius, color) {
     ctx.beginPath();
     ctx.arc(x, y, radius, 0, 2 * Math.PI);
-    ctx.fillStyle = "red";
+    ctx.fillStyle = color;
     ctx.fill();
     ctx.stroke();
 }
