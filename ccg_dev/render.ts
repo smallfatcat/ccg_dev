@@ -16,7 +16,7 @@ function renderPlayArea() {
   var ctx = c.getContext("2d");
 
   // Clear the Play Area Canvas
-  ctx.clearRect(0, 0, g_playArea.width, g_playArea.height);
+  //ctx.clearRect(0, 0, g_playArea.width, g_playArea.height);
 
   // Each Alive entity
   for (var i = 0; i < MAX_BALLS; i++) {
@@ -37,6 +37,8 @@ function renderPlayArea() {
 function drawCircle(ctx, x: number, y: number, radius: number ) {
   ctx.beginPath();
   ctx.arc(x, y, radius, 0, 2 * Math.PI);
+  ctx.fillStyle = "red";
+  ctx.fill();
   ctx.stroke();
 }
 

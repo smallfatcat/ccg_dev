@@ -14,9 +14,6 @@ function renderPlayArea() {
     var c = document.getElementById(g_playArea.containerID);
     var ctx = c.getContext("2d");
 
-    // Clear the Play Area Canvas
-    ctx.clearRect(0, 0, g_playArea.width, g_playArea.height);
-
     for (var i = 0; i < MAX_BALLS; i++) {
         if (gEntities[i].isAlive) {
             drawCircle(ctx, gEntities[i].pos.x, gEntities[i].pos.y, gEntities[i].collisionRadius);
@@ -33,6 +30,8 @@ function renderPlayArea() {
 function drawCircle(ctx, x, y, radius) {
     ctx.beginPath();
     ctx.arc(x, y, radius, 0, 2 * Math.PI);
+    ctx.fillStyle = "red";
+    ctx.fill();
     ctx.stroke();
 }
 

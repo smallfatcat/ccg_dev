@@ -158,14 +158,29 @@ function doCollisionChecks() {
     if (source.isAlive) {
       for (var j: number = 0; j < players.length; j++) {
         var target: Player = players[j];
-        if (target.isAlive) {
+        if (target.isAlive && source.isAlive) {
           var distanceObject: DistanceObject = calcGravity(source, target);
           applyGravity(source, distanceObject);
           var invertedDistanceObject: DistanceObject = storeDistanceObject(source, target, distanceObject);
           applyGravity(target, invertedDistanceObject);
           var isHit: boolean = checkRadiusCollision(source, target);
           if (isHit) {
-
+            // Calculate initial momentum
+            var momentum: Vector2D = { x: 0, y: 0 };
+            momentum.x = (source.vel.x * source.mass) + (target.vel.x * target.mass);
+            momentum.y = (source.vel.y * source.mass) + (target.vel.y * target.mass);
+            var newMass = source.mass + target.mass;
+            if (target.mass <= source.mass ) {
+              // Kill Target
+              target.isAlive = false;
+              source.vel.x = momentum.x / newMass;
+              source.vel.y = momentum.y / newMass;
+            }
+            if (target.mass > source.mass ) {
+              source.isAlive = false;
+              target.vel.x = momentum.x / newMass;
+              target.vel.y = momentum.y / newMass;
+            }
           }
         }
       }
@@ -174,13 +189,10 @@ function doCollisionChecks() {
 }
 
 function storeDistanceObject(source: Player, target: Player, distanceObject: DistanceObject ) {
+  var invertedDistanceObject = { targetID: source.id, vectorToOther: { x: distanceObject.vectorToOther.x * -1, y: distanceObject.vectorToOther.y * -1 }, gforce: distanceObject.gforce, distance: distanceObject.distance };
   source.distances.push(distanceObject);
-  var targetID: number = distanceObject.targetID;
-  distanceObject.targetID = source.id;
-  distanceObject.vectorToOther.x *= -1;
-  distanceObject.vectorToOther.y *= -1;
-  gEntities[targetID].distances.push(distanceObject);
-  return distanceObject;
+  target.distances.push(invertedDistanceObject);
+  return invertedDistanceObject;
 }
 
 function getVectorAB(A: Vector2D, B: Vector2D) {
@@ -191,8 +203,8 @@ function getVectorAB(A: Vector2D, B: Vector2D) {
 function calcGravity(source: Player, target: Player) {
   var distanceToOther: number = getDistance(source.pos, target.pos);
   var vectorToOther = getVectorAB(source.pos, target.pos);
-  vectorToOther.x / distanceToOther;
-  vectorToOther.y / distanceToOther;
+  vectorToOther.x /= distanceToOther;
+  vectorToOther.y /= distanceToOther;
   //  Gravity experiment
   var totalCollisionRadius: number = source.collisionRadius + target.collisionRadius;
   if (distanceToOther < totalCollisionRadius) {
