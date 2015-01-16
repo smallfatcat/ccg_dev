@@ -46,6 +46,7 @@ var Entity = (function () {
         this.acc = { x: 0, y: 0 };
         this.rotDegrees = 0;
         this.isAlive = true;
+        this.speed = PHYSICS_MAXRUN;
     }
     Entity.prototype.show = function () {
     };
@@ -82,6 +83,12 @@ var Player = (function (_super) {
         this.mass = properties.mass;
         this.collisionRadius = properties.collisionRadius;
     }
+    Player.prototype.moveTowards = function (pos) {
+        var towardsVector = getVectorAB(this.pos, pos);
+        normalize(towardsVector);
+        this.vel.x = towardsVector.x * this.speed;
+        this.vel.y = towardsVector.y * this.speed;
+    };
     return Player;
 })(Entity);
 

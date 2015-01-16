@@ -335,4 +335,11 @@ function applyBombDamage(bomb) {
         }
     }
 }
+
+function normalize(vector) {
+    var distance = Math.sqrt((vector.x * vector.x) + (vector.y * vector.y));
+    vector.x = vector.x / distance;
+    vector.y = vector.y / distance;
+    return vector;
+}
 //# sourceMappingURL=physics.js.map

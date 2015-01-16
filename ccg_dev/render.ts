@@ -16,12 +16,13 @@ function renderPlayArea() {
   var ctx = c.getContext("2d");
 
   // Clear the Play Area Canvas
-  //ctx.clearRect(0, 0, g_playArea.width, g_playArea.height);
+  ctx.clearRect(0, 0, g_playArea.width, g_playArea.height);
 
   // Each Alive entity
   for (var i = 0; i < MAX_BALLS; i++) {
     if (gEntities[i].isAlive) {
-      drawCircle(ctx, gEntities[i].pos.x, gEntities[i].pos.y, gEntities[i].collisionRadius );
+      drawCircle(ctx, gEntities[i].pos.x, gEntities[i].pos.y, gEntities[i].collisionRadius);
+      drawImage(ctx, gEntities[i].pos.x, gEntities[i].pos.y, gEntities[i].rotDegrees, 32, 'policeimg');
     }
   }
 
@@ -40,6 +41,16 @@ function drawCircle(ctx, x: number, y: number, radius: number ) {
   ctx.fillStyle = "red";
   ctx.fill();
   ctx.stroke();
+}
+
+function drawImage(ctx, x: number, y: number, a: number, width: number, imgID: string) {
+  var image = document.getElementById(imgID);
+
+  ctx.translate(x, y);
+  ctx.rotate(a * Math.PI / 180);
+  //ctx.fillRect(-50, -50, 100, 100);
+  ctx.drawImage(image, width / -2, width / -2);
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
 }
 
 function render() {

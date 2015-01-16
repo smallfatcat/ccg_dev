@@ -64,6 +64,7 @@ class Entity {
   acc: Vector2D;
   rotDegrees: number;
   isAlive: boolean;
+  speed: number;
 
   constructor(properties: EntProps) {
     this.id = properties.id;
@@ -72,6 +73,7 @@ class Entity {
     this.acc = { x: 0, y: 0 };
     this.rotDegrees = 0;
     this.isAlive = true;
+    this.speed = PHYSICS_MAXRUN;
   }
 
   show() {
@@ -119,6 +121,13 @@ class Player extends Entity {
     this.iconID = properties.iconID;
     this.mass = properties.mass;
     this.collisionRadius = properties.collisionRadius;
+  }
+
+  moveTowards(pos: Vector2D) {
+    var towardsVector: Vector2D = getVectorAB(this.pos, pos);
+    normalize(towardsVector);
+    this.vel.x = towardsVector.x * this.speed;
+    this.vel.y = towardsVector.y * this.speed;
   }
 }
 

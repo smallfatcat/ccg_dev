@@ -328,3 +328,12 @@ function applyBombDamage(bomb: Bomb) {
     }
   }
 }
+
+function normalize(vector: Vector2D) {
+  var distance: number = Math.sqrt((vector.x * vector.x) + (vector.y * vector.y));
+  vector.x = vector.x / distance;
+  vector.y = vector.y / distance;
+  return vector;
+}
+
+
