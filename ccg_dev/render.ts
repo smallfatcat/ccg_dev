@@ -21,7 +21,7 @@ function renderPlayArea() {
   // Each Alive entity
   for (var i = 0; i < MAX_BALLS; i++) {
     if (gEntities[i].isAlive) {
-      drawCircle( ctx, gEntities[i].pos.x, gEntities[i].pos.y, 16 );
+      drawCircle(ctx, gEntities[i].pos.x, gEntities[i].pos.y, gEntities[i].collisionRadius );
     }
   }
 

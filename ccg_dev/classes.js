@@ -80,6 +80,7 @@ var Player = (function (_super) {
         this.name = properties.name;
         this.iconID = properties.iconID;
         this.mass = properties.mass;
+        this.collisionRadius = properties.collisionRadius;
     }
     return Player;
 })(Entity);

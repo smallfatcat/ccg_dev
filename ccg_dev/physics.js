@@ -65,6 +65,30 @@ function calcPlayerPhysics() {
             physicsPlayer(gEntities[i]);
         }
     }
+    doCollisionChecks();
+
+    for (var i = 1; i < MAX_BALLS; i++) {
+        if (gEntities[i].isAlive) {
+            // Do physics for all test objects
+            if (checkRadiusCollision(gEntities[0], gEntities[i])) {
+                gEntities[i].isAlive = false;
+            }
+        }
+    }
+}
+
+function calcVelocity(u, acc, t) {
+    var v = { x: 0, y: 0 };
+    v.x = u.x + (acc.x * t);
+    v.y = u.y + (acc.y * t);
+    return v;
+}
+
+function calcFinalCoords(start, u, acc, t) {
+    var end = { x: 0, y: 0 };
+    end.x = start.x + ((u.x * t) + (0.5 * t * t * acc.x));
+    end.y = start.y + ((u.y * t) + (0.5 * t * t * acc.y));
+    return end;
 }
 
 // Do physics for player object
@@ -74,99 +98,141 @@ function physicsPlayer(player) {
     // t is the time elapsed in this tick
     var t = PHYSICS_TICK / 1000;
 
-    // ux/uy are the initial velocities, vx/vy final velocities, startx/starty are the initial coords, endx/endy are the final coords
+    // u is the initial velocity, v final velocity, start is the initial coords, end is the final coords
     // Set initial velocity
-    var ux = player.vel.x;
-    var uy = player.vel.y;
+    var u = player.vel;
 
     // calculate final velocity
-    var vx = ux + (player.acc.x * t);
-    var vy = uy + (player.acc.y * t);
+    var v = calcVelocity(u, player.acc, t);
 
     // Set initital coords
-    var startx = player.pos.x;
-    var starty = player.pos.y;
+    var start = player.pos;
 
     // Calculate final coords
-    var endx = startx + ((ux * t) + (0.5 * t * t * player.acc.x));
-    var endy = starty + ((uy * t) + (0.5 * t * t * player.acc.y));
+    var end = calcFinalCoords(start, u, player.acc, t);
 
     // Set up a collision result object
-    var collided;
-
     // Do collisions on each side of the box - to be changed, testing only
-    collided = collide(t, ux, vx, startx, endx, 800, player.acc.x, 1, ELASTICITY_NORMAL);
-    endx = collided.end;
-    vx = collided.v;
-    if (collided.touched) {
-        vy *= PHYSICS_FRICTION;
-    }
-
-    collided = collide(t, ux, vx, startx, endx, 0, player.acc.x, -1, ELASTICITY_NORMAL);
-    endx = collided.end;
-    vx = collided.v;
-    if (collided.touched) {
-        vy *= PHYSICS_FRICTION;
-    }
-
-    collided = collide(t, uy, vy, starty, endy, 800, player.acc.y, 1, ELASTICITY_NORMAL);
-    endy = collided.end;
-    vy = collided.v;
-    if (collided.touched) {
-        vx *= PHYSICS_FRICTION;
-    }
-
-    collided = collide(t, uy, vy, starty, endy, 0, player.acc.y, -1, ELASTICITY_NORMAL);
-    endy = collided.end;
-    vy = collided.v;
-    if (collided.touched) {
-        vx *= PHYSICS_FRICTION;
-    }
-
+    //var collideResult = checkSideCollision(u, v, start, end, player.acc, t);
+    //v = collideResult.v;
+    //end = collideResult.end;
     // Calculate new direction angle
     var rotRadians = Math.atan2(player.vel.y, player.vel.x);
     var twoPi = 6.283185307179586476925286766559;
 
     // Store new values
-    player.pos.x = endx;
-    player.pos.y = endy;
-    player.vel.x = vx;
-    player.vel.y = vy;
+    player.pos = end;
+    player.vel = v;
     player.rotDegrees = ((rotRadians / twoPi) * 360) + 90;
 
-    // calculate distances
-    player.acc.x = 0;
-    player.acc.y = 0;
-    var newDistances = [];
-    for (i = 0; i < MAX_BALLS; i++) {
-        if (gEntities[i].isAlive && player.id != gEntities[i].id) {
-            var distanceObject = calcGravity(player, gEntities[i]);
-            player.acc.x += distanceObject.vectorToOther.x * distanceObject.gforce / player.mass;
-            player.acc.y += distanceObject.vectorToOther.y * distanceObject.gforce / player.mass;
-            if (player.acc.x > 100 || player.acc.x < -100 || player.acc.y > 100 || player.acc.y < -100) {
-                player.acc.x = 100;
-                player.acc.y = 100;
-            }
-            newDistances.push(distanceObject);
-        }
-    }
-    player.distances = newDistances;
+    // Reset distance info
+    player.acc = { x: 0, y: 0 };
+    player.distances = [];
 }
 
-function calcGravity(source, other) {
-    var distanceToOther = getDistance(source.pos.x, source.pos.y, other.pos.x, other.pos.y);
-    var vectorToOther = { x: ((other.pos.x - source.pos.x) / distanceToOther), y: ((other.pos.y - source.pos.y) / distanceToOther) };
+function applyGravity(player, distanceObject) {
+    player.acc.x += distanceObject.vectorToOther.x * distanceObject.gforce / player.mass;
+    player.acc.y += distanceObject.vectorToOther.y * distanceObject.gforce / player.mass;
+    if (player.acc.x > PHYSICS_MAXACC) {
+        player.acc.x = PHYSICS_MAXACC;
+    }
+    if (player.acc.x < -1 * PHYSICS_MAXACC) {
+        player.acc.x = -1 * PHYSICS_MAXACC;
+    }
+    if (player.acc.y > PHYSICS_MAXACC) {
+        player.acc.y = PHYSICS_MAXACC;
+    }
+    if (player.acc.y < -1 * PHYSICS_MAXACC) {
+        player.acc.y = -1 * PHYSICS_MAXACC;
+    }
+}
 
-    //  Gravity experiment
-    if (distanceToOther > -10 && distanceToOther < 10) {
-        if (distanceToOther > 0) {
-            distanceToOther = 10;
-        } else {
-            distanceToOther = -10;
+function doCollisionChecks() {
+    var players = [];
+    players = gEntities.slice(0);
+
+    for (var i = 0; i < MAX_BALLS; i++) {
+        var source = players.pop();
+        if (source.isAlive) {
+            for (var j = 0; j < players.length; j++) {
+                var target = players[j];
+                if (target.isAlive) {
+                    var distanceObject = calcGravity(source, target);
+                    applyGravity(source, distanceObject);
+                    var invertedDistanceObject = storeDistanceObject(source, target, distanceObject);
+                    applyGravity(target, invertedDistanceObject);
+                    var isHit = checkRadiusCollision(source, target);
+                    if (isHit) {
+                    }
+                }
+            }
         }
     }
-    var gravityForceX = GRAVITY_CONSTANT * (source.mass * other.mass / (distanceToOther * distanceToOther));
-    return { otherID: other.id, distance: distanceToOther, vectorToOther: vectorToOther, gforce: gravityForceX };
+}
+
+function storeDistanceObject(source, target, distanceObject) {
+    source.distances.push(distanceObject);
+    var targetID = distanceObject.targetID;
+    distanceObject.targetID = source.id;
+    distanceObject.vectorToOther.x *= -1;
+    distanceObject.vectorToOther.y *= -1;
+    gEntities[targetID].distances.push(distanceObject);
+    return distanceObject;
+}
+
+function getVectorAB(A, B) {
+    var AB = { x: B.x - A.x, y: B.y - A.y };
+    return AB;
+}
+
+function calcGravity(source, target) {
+    var distanceToOther = getDistance(source.pos, target.pos);
+    var vectorToOther = getVectorAB(source.pos, target.pos);
+    vectorToOther.x / distanceToOther;
+    vectorToOther.y / distanceToOther;
+
+    //  Gravity experiment
+    var totalCollisionRadius = source.collisionRadius + target.collisionRadius;
+    if (distanceToOther < totalCollisionRadius) {
+        distanceToOther = totalCollisionRadius;
+    }
+    var gravityForceX = GRAVITY_CONSTANT * (source.mass * target.mass / (distanceToOther * distanceToOther));
+    return { targetID: target.id, distance: distanceToOther, vectorToOther: vectorToOther, gforce: gravityForceX };
+}
+
+function calcGravityForce(source, other) {
+}
+
+function checkSideCollision(u, v, start, end, acc, t) {
+    var collided;
+    collided = collide(t, u.x, v.x, start.x, end.x, 800, acc.x, 1, ELASTICITY_NORMAL);
+    end.x = collided.end;
+    v.x = collided.v;
+    if (collided.touched) {
+        v.y *= PHYSICS_FRICTION;
+    }
+
+    collided = collide(t, u.x, v.x, start.x, end.x, 0, acc.x, -1, ELASTICITY_NORMAL);
+    end.x = collided.end;
+    v.x = collided.v;
+    if (collided.touched) {
+        v.y *= PHYSICS_FRICTION;
+    }
+
+    collided = collide(t, u.y, v.y, start.y, end.y, 800, acc.y, 1, ELASTICITY_NORMAL);
+    end.y = collided.end;
+    v.y = collided.v;
+    if (collided.touched) {
+        v.x *= PHYSICS_FRICTION;
+    }
+
+    collided = collide(t, u.y, v.y, start.y, end.y, 0, acc.y, -1, ELASTICITY_NORMAL);
+    end.y = collided.end;
+    v.y = collided.v;
+    if (collided.touched) {
+        v.x *= PHYSICS_FRICTION;
+    }
+    return { v: v, end: end };
 }
 
 // Check collision with the sides of the box
@@ -220,17 +286,26 @@ function collide(t, u, v, start, end, limit, acc, direction, elasticity) {
     return { 'end': end, 'v': v, 'touched': touched };
 }
 
-function getDistance(xa, ya, xb, yb) {
-    var x = xb - xa;
-    var y = yb - ya;
+function getDistance(a, b) {
+    var x = b.x - a.x;
+    var y = b.y - a.y;
     var distance = Math.sqrt((x * x) + (y * y));
     return distance;
+}
+
+function checkRadiusCollision(source, target) {
+    var isHit = false;
+    var d = getDistance(source.pos, target.pos);
+    if (d <= source.collisionRadius + target.collisionRadius) {
+        isHit = true;
+    }
+    return isHit;
 }
 
 function checkBombHit(bomb, player) {
     var isHit = false;
     var checkRadius = bomb.radius + 16;
-    var distance = getDistance(bomb.pos.x, bomb.pos.y, player.pos.x, player.pos.y);
+    var distance = getDistance(bomb.pos, player.pos);
     if (distance <= checkRadius) {
         isHit = true;
     }

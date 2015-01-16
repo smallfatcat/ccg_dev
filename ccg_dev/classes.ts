@@ -107,16 +107,18 @@ interface PropProps extends EntProps {
 }
 
 class Player extends Entity {
-  distances: number[];
+  distances: DistanceObject[];
   iconID: number;
   name: string;
   mass: number;
+  collisionRadius: number;
   constructor(properties: PlayerProps) {
     super(properties);
     this.distances = [];
     this.name = properties.name;
     this.iconID = properties.iconID;
     this.mass = properties.mass;
+    this.collisionRadius = properties.collisionRadius;
   }
 }
 
@@ -124,6 +126,7 @@ interface PlayerProps extends EntProps {
   iconID: number;
   name: string;
   mass: number;
+  collisionRadius: number;
 } 
 
 class Bomb extends Entity {
@@ -154,6 +157,13 @@ interface BombProps extends EntProps {
 interface Vector2D {
   x: number;
   y: number;
+}
+
+interface DistanceObject {
+  targetID: number;
+  distance: number;
+  vectorToOther: Vector2D;
+  gforce: number;
 }
 
 
