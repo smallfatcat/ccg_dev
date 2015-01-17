@@ -33,8 +33,20 @@ var Stats = (function () {
         this.kills = 0;
         this.playersAlive = MAX_BALLS;
         this.bombsUsed = 0;
+        this.teamKillsA = 0;
+        this.teamKillsB = 0;
     }
     return Stats;
+})();
+
+// InfoWindow class
+var InfoWindow = (function () {
+    function InfoWindow(properties) {
+        this.pos = properties.pos;
+        this.visible = properties.visible;
+        this.currentVisibility = properties.visible;
+    }
+    return InfoWindow;
 })();
 
 // Entity Class

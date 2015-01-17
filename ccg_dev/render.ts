@@ -5,10 +5,24 @@ function renderPlayArea() {
   if (!gPlayAreaCanvasCreated) {
     $('#content').empty();
     var html: string = g_playArea.generateHtml();
+    gInfoWindow = new InfoWindow({ pos: { x: 800, y: 0 }, visible: true});
+    html += '<div id="infowindow" class="infowindow" style="left: ' + gInfoWindow.pos.x + 'px; top: ' + gInfoWindow.pos.y +'px;">Test</div>';
     // write scene to html
     $('#content').append(html);
     gPlayAreaCanvasCreated = true;
   }
+
+  // Show or hide infoWindow
+  if (gInfoWindow.visible && !gInfoWindow.currentVisibility) {
+    $('#infowindow').show();
+    gInfoWindow.currentVisibility = true;
+  }
+  if (!gInfoWindow.visible && gInfoWindow.currentVisibility) {
+    $('#infowindow').hide();
+    gInfoWindow.currentVisibility = false;
+  }
+
+  updateInfoWindow();
 
   // Use canvas
 
@@ -21,8 +35,14 @@ function renderPlayArea() {
   // Each Alive entity
   for (var i = 0; i < MAX_BALLS; i++) {
     if (gEntities[i].isAlive) {
-      drawCircle(ctx, gEntities[i].pos.x, gEntities[i].pos.y, gEntities[i].collisionRadius, gEntities[i].team == 0 ? 'red':'blue');
+      drawCircle(ctx, gEntities[i].pos.x, gEntities[i].pos.y, gEntities[i].collisionRadius, gEntities[i].team == 0 ? 'red' : 'blue');
       drawImage(ctx, gEntities[i].pos.x, gEntities[i].pos.y, gEntities[i].rotDegrees, 32, 'policeimg');
+      if (gEntities[i].isFighting) {
+        drawRectangle(ctx, gEntities[i].pos.x - 12, gEntities[i].pos.y - 24, (24 / 100) * gEntities[i].health, 4, 'yellow');
+      }
+    }
+    else {
+      drawCircle(ctx, gEntities[i].pos.x, gEntities[i].pos.y, 5, gEntities[i].team == 0 ? 'red' : 'blue');
     }
   }
 
@@ -35,11 +55,40 @@ function renderPlayArea() {
 
 }
 
+function updateInfoWindow() {
+  var html: string = '';
+  html += 'startTime: ' + gStats.startTime;
+  html += '<br>frameCounter: ' + gStats.frameCounter;
+  html += '<br>currentTime: ' + gStats.currentTime;
+  html += '<br>fps: ' + gStats.fps;
+  html += '<br>lastFrameTime: ' + gStats.lastFrameTime;
+  html += '<br>kills: ' + gStats.kills;
+  html += '<br>teamKillsA: ' + gStats.teamKillsA;
+  html += '<br>teamKillsB: ' + gStats.teamKillsB;
+  html += '<br>playersAlive: ' + gStats.playersAlive;
+  html += '<br>bombsUsed: ' + gStats.bombsUsed;
+  if (gPause) {
+    html += '<br><br>GAME PAUSED';
+  }
+  $('#infowindow').empty();
+  $('#infowindow').append(html);
+}
+
 function drawCircle(ctx, x: number, y: number, radius: number, color: string) {
   ctx.beginPath();
   ctx.arc(x, y, radius, 0, 2 * Math.PI);
   ctx.fillStyle = color;
   ctx.fill();
+  ctx.stroke();
+}
+
+function drawRectangle(ctx, x: number, y: number, width: number, height: number, color: string) {
+  ctx.beginPath();
+  ctx.rect(x, y, width, height);
+  ctx.fillStyle = color;
+  ctx.fill();
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = 'black';
   ctx.stroke();
 }
 

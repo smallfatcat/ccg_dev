@@ -3,6 +3,12 @@
 function physics() {
     // Check if game is paused
     if (!gPause) {
+        if (gStats.teamKillsA == (MAX_BALLS / 2) || gStats.teamKillsB == (MAX_BALLS / 2)) {
+            if (!gReset) {
+                gReset = true;
+                setTimeout(reset, 5000);
+            }
+        }
         calcPlayerPhysics();
         calcBombPhysics();
         if (gApproachTimerFlag) {
@@ -26,6 +32,11 @@ function physics() {
     gStats.currentTime = currentTime;
     gStats.frameCounter++;
     gStats.fps = Math.round(1000 / gStats.lastFrameTime);
+}
+
+function reset() {
+    init();
+    gReset = false;
 }
 
 function setApproachTimerFlag() {
@@ -94,15 +105,24 @@ function performFights() {
     for (var i = 0; i < gEntities.length; i++) {
         var player = gEntities[i];
         if (player.isFighting) {
-            if (attackRoll(50)) {
-                gEntities[player.fight.targetID].health -= 1;
-                if (gEntities[player.fight.targetID].health < 1) {
-                    gEntities[player.fight.targetID].isAlive = false;
-                    player.isFighting = false;
-                    gEntities[player.fight.targetID].isFighting = false;
-                    player.pointAt(nearestEnemyPos(player.pos, player.team));
-                    player.moveForward();
+            if (gEntities[player.fight.targetID].isAlive) {
+                if (attackRoll(50)) {
+                    gEntities[player.fight.targetID].health -= 1;
+                    if (gEntities[player.fight.targetID].health < 1) {
+                        gEntities[player.fight.targetID].isAlive = false;
+                        gEntities[player.fight.targetID].team == 0 ? gStats.teamKillsA++ : gStats.teamKillsB++;
+                        gStats.kills++;
+                        gStats.playersAlive--;
+                        player.isFighting = false;
+                        gEntities[player.fight.targetID].isFighting = false;
+                        player.pointAt(nearestEnemyPos(player.pos, player.team));
+                        player.moveForward();
+                    }
                 }
+            } else {
+                player.isFighting = false;
+                player.pointAt(nearestEnemyPos(player.pos, player.team));
+                player.moveForward();
             }
         }
     }
@@ -174,8 +194,10 @@ function nearestEnemyPos(myPos, myTeam) {
 
 function makeAllThingsApproachEnemies() {
     for (var i = 0; i < gEntities.length; i++) {
-        gEntities[i].pointAt(nearestEnemyPos(gEntities[i].pos, gEntities[i].team));
-        gEntities[i].moveForward();
+        if (!gEntities[i].isFighting) {
+            gEntities[i].pointAt(nearestEnemyPos(gEntities[i].pos, gEntities[i].team));
+            gEntities[i].moveForward();
+        }
     }
 }
 

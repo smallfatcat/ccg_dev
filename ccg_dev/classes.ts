@@ -37,6 +37,8 @@ class Stats {
   kills: number;
   playersAlive: number;
   bombsUsed: number;
+  teamKillsA: number;
+  teamKillsB: number;
   constructor(properties: StatsProps) {
     this.startTime = properties.startTime;
     this.frameCounter = 0;
@@ -46,6 +48,8 @@ class Stats {
     this.kills = 0;
     this.playersAlive = MAX_BALLS;
     this.bombsUsed = 0;
+    this.teamKillsA = 0;
+    this.teamKillsB = 0;
   }
 }
 
@@ -54,6 +58,23 @@ interface StatsProps {
   //frameCounter: number;
   //currentTime: number;
   //fps: number;
+}
+
+// InfoWindow class
+class InfoWindow {
+  pos: Vector2D;
+  visible: boolean;
+  currentVisibility: boolean;
+  constructor(properties: InfoWindowProps) {
+    this.pos = properties.pos;
+    this.visible = properties.visible;
+    this.currentVisibility = properties.visible;
+  }
+}
+
+interface InfoWindowProps {
+  pos: Vector2D;
+  visible: boolean;
 }
 
 // Entity Class
