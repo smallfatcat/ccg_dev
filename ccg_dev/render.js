@@ -28,12 +28,10 @@ function renderPlayArea() {
     var c = document.getElementById(g_playArea.containerID);
     var ctx = c.getContext("2d");
 
-    // Clear the Play Area Canvas
-    ctx.clearRect(0, 0, g_playArea.width, g_playArea.height);
-
-    for (var i = 0; i < MAX_BALLS; i++) {
+    for (var i = 0; i < MAX_PLAYERS; i++) {
         if (gEntities[i].isAlive) {
             drawCircle(ctx, gEntities[i].pos.x, gEntities[i].pos.y, gEntities[i].collisionRadius, gEntities[i].team == 0 ? 'red' : 'blue');
+            drawCircle(ctx, gEntities[i].destination.x, gEntities[i].destination.y, gEntities[i].collisionRadius, 'grey');
             drawImage(ctx, gEntities[i].pos.x, gEntities[i].pos.y, gEntities[i].rotDegrees, 32, 'policeimg');
             if (gEntities[i].isFighting) {
                 drawRectangle(ctx, gEntities[i].pos.x - 12, gEntities[i].pos.y - 24, (24 / 100) * gEntities[i].health, 4, 'yellow');
@@ -65,6 +63,10 @@ function updateInfoWindow() {
     if (gPause) {
         html += '<br><br>GAME PAUSED';
     }
+    if (gReset) {
+        html += '<br><br>Reset in ' + gStats.resetCountdown + (gStats.resetCountdown == 1 ? ' second' : ' seconds');
+    }
+
     $('#infowindow').empty();
     $('#infowindow').append(html);
 }
@@ -104,7 +106,7 @@ function render() {
     // Set up
     var html = '';
 
-    for (var i = 0; i < MAX_BALLS; i++) {
+    for (var i = 0; i < MAX_PLAYERS; i++) {
         if (gEntities[i].isAlive) {
             html += renderPlayer(gEntities[i]);
         }
@@ -128,7 +130,7 @@ function render() {
         }
     }
     // rotate each test object
-    //for (var i = 0; i < MAX_BALLS; i++) {
+    //for (var i = 0; i < MAX_PLAYERS; i++) {
     //  $('#i' + i).rotate(gEntities[i].rotDegrees);
     //}
 }
@@ -153,7 +155,7 @@ function renderPlayer(player) {
     //playerDiv += '<div id="playerDiv' + player.id + '" class="absolute" style="left: ' + player.pos.x + 'px; top: ' + player.pos.y + 'px;">' + player.name + ' x: ' + player.pos.x + ' y: ' + player.pos.y + '</div>';
     var imgSrc = '';
 
-    //imgSrc = player.id < (MAX_BALLS / 2) ? 'ball.png' : 'ball_red.png';
+    //imgSrc = player.id < (MAX_PLAYERS / 2) ? 'ball.png' : 'ball_red.png';
     imgSrc = 'police.png';
     playerDiv += '<div id="playerDiv' + player.id + '" class="absolute" style="left: ' + player.pos.x + 'px; top: ' + player.pos.y + 'px;"><img id="i' + player.id + '" style="width: 32px;" src="' + imgSrc + '"></div>';
 

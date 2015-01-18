@@ -31,10 +31,11 @@ var Stats = (function () {
         this.fps = 0;
         this.lastFrameTime = 0;
         this.kills = 0;
-        this.playersAlive = MAX_BALLS;
+        this.playersAlive = MAX_PLAYERS;
         this.bombsUsed = 0;
         this.teamKillsA = 0;
         this.teamKillsB = 0;
+        this.resetCountdown = 5;
     }
     return Stats;
 })();
@@ -94,10 +95,14 @@ var Player = (function (_super) {
         this.iconID = properties.iconID;
         this.mass = properties.mass;
         this.collisionRadius = properties.collisionRadius;
-        this.health = 100;
+        this.health = properties.health;
         this.fight = { targetID: -1, targetDirection: { x: 0, y: 0 }, targetHealth: 100 };
         this.isFighting = false;
-        this.team = 0;
+        this.team = properties.team;
+        this.damage = properties.damage;
+        this.attackChance = properties.attackChance;
+        this.attackers = 0;
+        this.destination = { x: 0, y: 0 };
     }
     Player.prototype.moveTowards = function (pos) {
         var towardsVector = getVectorAB(this.pos, pos);

@@ -4,18 +4,19 @@
 function physics() {
   // Check if game is paused
   if (!gPause) {
-    if (gStats.teamKillsA == (MAX_BALLS / 2)|| gStats.teamKillsB == (MAX_BALLS/2)) {
+    // Check for end of game
+    if (gStats.teamKillsA == TEAM_B_PLAYERS || gStats.teamKillsB == TEAM_A_PLAYERS) {
       if(!gReset) {
         gReset = true;
-        setTimeout(reset, 5000);
+        setTimeout(reset, 1000);
       }
     }
     calcPlayerPhysics();
     calcBombPhysics();
     if (gApproachTimerFlag) {
-      makeAllThingsApproachEnemies();
-      gApproachTimerFlag = false;
-      setTimeout(setApproachTimerFlag, 1000);
+      //makeAllThingsApproachEnemies();
+      //gApproachTimerFlag = false;
+      //setTimeout(setApproachTimerFlag, 1000);
     }
   }
 
@@ -37,8 +38,15 @@ function physics() {
 }
 
 function reset() {
-  init();
-  gReset = false;
+  gStats.resetCountdown--;
+  if (gStats.resetCountdown == 0) {
+    init();
+    gStats.resetCountdown = 5;
+    gReset = false;
+  }
+  else {
+    setTimeout(reset, 1000);
+  }
 }
 
 function setApproachTimerFlag() {
@@ -80,7 +88,7 @@ function calcBombPhysics() {
 
 function calcPlayerPhysics() {
   // Loop through all test objects
-  for (var i = 0; i < MAX_BALLS; i++) {
+  for (var i = 0; i < MAX_PLAYERS; i++) {
     if (gEntities[i].isAlive) {
       // Do physics for all test objects 
       physicsPlayer(gEntities[i]);
@@ -104,17 +112,19 @@ function calcPlayerPhysics() {
 function performFights() {
   for (var i: number = 0; i < gEntities.length; i++) {
     var player: Player = gEntities[i];
+    var target: Player = gEntities[player.fight.targetID];
     if (player.isFighting) {
-      if (gEntities[player.fight.targetID].isAlive) {
-        if (attackRoll(50)) {
-          gEntities[player.fight.targetID].health -= 1;
-          if (gEntities[player.fight.targetID].health < 1) {
-            gEntities[player.fight.targetID].isAlive = false;
-            gEntities[player.fight.targetID].team == 0 ? gStats.teamKillsA++ : gStats.teamKillsB++
+      if (target.isAlive) {
+        if (attackRoll(player.attackChance)) {
+          target.health -= player.damage;
+          if (target.health < 1) {
+            target.isAlive = false;
+            target.team == 0 ? gStats.teamKillsA++ : gStats.teamKillsB++
             gStats.kills++;
             gStats.playersAlive--;
             player.isFighting = false;
-            gEntities[player.fight.targetID].isFighting = false;
+            gEntities[target.fight.targetID].attackers--;
+            target.isFighting = false;
             player.pointAt(nearestEnemyPos(player.pos, player.team));
             player.moveForward();
           }
@@ -152,6 +162,7 @@ function setFighting(source: Player, target: Player) {
       source.stop();
       source.pointAt(target.pos);
       source.isFighting = true;
+      target.attackers++;
       source.fight.targetID = target.id;
       source.fight.targetHealth = target.health;
       source.fight.targetDirection = getVectorAB(source.pos, target.pos);
@@ -169,6 +180,7 @@ function setFighting(source: Player, target: Player) {
       target.stop();
       target.pointAt(source.pos);
       target.isFighting = true;
+      source.attackers++;
       target.fight.targetID = source.id;
       target.fight.targetHealth = source.health;
       target.fight.targetDirection = getVectorAB(target.pos, source.pos);
@@ -182,13 +194,11 @@ function nearestEnemyPos(myPos: Vector2D, myTeam: number) {
   var minDistance = -1;
   for (var i: number = 0; i < gEntities.length; i++) {
     var enemy: Player = gEntities[i];
-    if (enemy.isAlive) {
-      if (enemy.team != myTeam) {
-        distance = getDistance(myPos, enemy.pos);
-        if (distance < minDistance || minDistance == -1) {
-          minDistance = distance;
-          enemyPos = enemy.pos;
-        }
+    if (enemy.isAlive && enemy.team != myTeam && enemy.attackers < 2) {
+      distance = getDistance(myPos, enemy.pos);
+      if (distance < minDistance || minDistance == -1) {
+        minDistance = distance;
+        enemyPos = enemy.pos;
       }
     }
   }
@@ -202,6 +212,98 @@ function makeAllThingsApproachEnemies() {
       gEntities[i].moveForward();
     }
   }
+}
+
+function reorient(v: Vector2D, t: Vector2D, id: number) {
+  // calculate angle between velocity and target
+  var angle: number = calculateAngle(v, t);
+
+  //if angle is above 180 reverse it
+  if (angle > Math.PI) {
+    angle = angle - (Math.PI * 2);
+  }
+  if (angle < -Math.PI) {
+    angle = angle + (Math.PI * 2);
+  }
+
+  var newV: Vector2D = {x: v.x, y: v.y};
+  // if angle is positive turn right
+  if (angle > 0 ) {
+    newV = turn(v, 'right', MAX_TURN/2);
+    //console.log('Angle: ' + angle + 'Turn: right ID: ' + id);
+  }
+  // if angle is negative turn left
+  if (angle < 0 ) {
+    newV = turn(v, 'left', MAX_TURN/2);
+    //console.log('Angle: ' + angle + ' Turn: left ID: '+ id);
+  }
+  // if angle is zero do nothing
+
+  // return new velocity
+  return newV;
+}
+
+function avoid(v: Vector2D, h: Vector2D) {
+  // calculate angle between velocity and hazard
+  var angle: number = calculateAngle(v, h);
+
+  //if angle is above 180 reverse it
+  if (angle > Math.PI) {
+    angle = angle - (Math.PI *2);
+  }
+  if (angle < -Math.PI) {
+    angle = angle + (Math.PI * 2);
+  }
+
+  var newV: Vector2D = { x: v.x, y: v.y };
+  // if angle is positive turn left
+  var angleDeg: number = (angle / (Math.PI * 2)) * 360; 
+  angleDeg = angleDeg < 0 ? (angleDeg * -1) : angleDeg;
+  if (angle > 0.00872664626 ) {
+    newV = turn(v, 'left', angleDeg/2);
+    console.log('  left, angle: ' + angle + ' v: ' + v.x + ',' + v.y + ' h: ' + h.x + ',' + h.y);
+  }
+  // else turn right
+  if (angle <= 0.00872664626 ) {
+    newV = turn(v, 'right', angleDeg/2);
+    console.log('  right, angle: ' + angle + ' v: ' + v.x + ',' + v.y + ' h: ' + h.x + ',' + h.y);
+  }
+
+  // return new velocity
+  return newV;
+}
+
+
+function calculateAngle(a: Vector2D, b: Vector2D) {
+  var angle: number;
+  angle = Math.atan2(b.y, b.x) - Math.atan2(a.y, a.x);
+  //console.log('Angle: ' + angle + ' a: ' + Math.atan2(a.y, a.x) + ' b: ' + Math.atan2(b.y, b.x));
+  return angle;
+}
+
+function dot(a: Vector2D, b: Vector2D) {
+  var dotProduct: number = (a.x * b.x) + (a.y * b.y);
+  return dotProduct;
+}
+
+function mag(a: Vector2D) {
+  var magnitude: number = Math.sqrt((a.x * a.x) + (a.y * a.y));
+  return magnitude;
+}
+
+function turn(v: Vector2D, d: string, angleDeg: number) {
+  var angleRad: number = (angleDeg / 360) * (Math.PI * 2);
+  var newV: Vector2D = {x: 0, y:0};
+  var y: number;
+  if (d == 'left') {
+    newV.x = (v.x * Math.cos(angleRad)) + (v.y * Math.sin(angleRad));
+    newV.y = (v.y * Math.cos(angleRad)) - (v.x * Math.sin(angleRad));
+  }
+  if (d == 'right') {
+    newV.x = (v.x * Math.cos(angleRad)) - (v.y * Math.sin(angleRad));
+    newV.y = (v.x * Math.sin(angleRad)) + (v.y * Math.cos(angleRad));
+  }
+  return newV;
 }
 
 function calcVelocity(u: Vector2D, acc: Vector2D, t: number) {
@@ -251,6 +353,37 @@ function physicsPlayer(player: Player) {
   player.acc = { x: 0, y: 0 };
   player.distances = [];
 
+  var destinationDistance = getDistance(player.pos, player.destination);
+  if (destinationDistance < 1 && destinationDistance > -1) {
+    player.stop();
+  }
+  else {
+    // Reorient algorithm
+    player.speed = PHYSICS_MAXRUN;
+    player.vel = reorient(player.vel, getVectorAB(player.pos, player.destination), player.id);
+    //var normalV: number = PHYSICS_MAXRUN / mag(player.vel);
+    //player.vel.x *= normalV;
+    //player.vel.y *= normalV;
+
+    // Avoidance algorithm
+    var closestPlayerID: number = selectOtherPlayer(player.pos.x, player.pos.y, player.id);
+    if (closestPlayerID != -1) {
+      var closestPlayer: Player = gEntities[closestPlayerID];
+      var closesetDistance: number = getDistance(player.pos, closestPlayer.pos);
+      var detectRadius: number = player.collisionRadius + closestPlayer.collisionRadius + DETECT_RADIUS;
+      if (closesetDistance < detectRadius) {
+        //var brakingFactor = PHYSICS_MAXRUN * (closesetDistance / detectRadius) * (closesetDistance / detectRadius);
+        var brakingFactor = 2;
+        console.log(player.id + ' Avoiding: ' + closestPlayer.id);
+        player.vel = avoid(player.vel, getVectorAB(player.pos, closestPlayer.pos));
+        //var normalV: number = (brakingFactor) / mag(player.vel);
+        //player.vel.x *= normalV;
+        //player.vel.y *= normalV;
+        
+      }
+    }
+  }
+
 }
 
 function applyGravity(player: Player, distanceObject: DistanceObject ) {
@@ -275,7 +408,7 @@ function doCollisionChecks() {
   var players: Player[] = [];
   players = gEntities.slice(0);
   // Each player
-  for (var i: number = 0; i < MAX_BALLS; i++) {
+  for (var i: number = 0; i < MAX_PLAYERS; i++) {
     var source: Player = players.pop();
     if (source.isAlive) {
       for (var j: number = 0; j < players.length; j++) {
@@ -448,7 +581,7 @@ function checkBombHit(bomb: Bomb, player: Player) {
 }
 
 function applyBombDamage(bomb: Bomb) {
-  for (var i = 0; i < MAX_BALLS; i++) {
+  for (var i = 0; i < MAX_PLAYERS; i++) {
     if (gEntities[i].isAlive) {
       if (checkBombHit(bomb, gEntities[i])) {
         gEntities[i].isAlive = false;
