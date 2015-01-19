@@ -74,10 +74,15 @@ function updateInfoWindow() {
   if (gReset) {
     html += '<br><br>Reset in ' + gStats.resetCountdown + (gStats.resetCountdown == 1 ? ' second':' seconds');
   }
+  html += '<br><input type="button" id="resetBut" value="Start"></input>';
 
   $('#infowindow').empty();
   $('#infowindow').append(html);
+  $('#resetBut').mousedown(function () {
+    init();
+  });
 }
+
 
 function drawFilledCircle(ctx, x: number, y: number, radius: number, color: string) {
   ctx.beginPath();

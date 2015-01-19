@@ -79,4 +79,8 @@ function selectOtherPlayer(x, y, id) {
     //console.log('closestPlayerID: ' + closestPlayerID);
     return closestPlayerID;
 }
+
+function resetButton() {
+    init();
+}
 //# sourceMappingURL=ui.js.map

@@ -81,3 +81,7 @@ function selectOtherPlayer(x: number, y: number, id: number) {
   return closestPlayerID;
 
 }
+
+function resetButton() {
+  init();
+}

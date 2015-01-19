@@ -11,7 +11,7 @@
 var PHYSICS_TICK = 15;
 var PHYSICS_GRAVITY = 0;
 var PHYSICS_FRICTION = 1;
-var PHYSICS_MAXRUN = 80;
+var PHYSICS_MAXRUN = 100;
 var PHYSICS_MAXACC = 2000;
 var PHYSICS_MINDIST = 2;
 var MAX_TURN = 5;
@@ -85,6 +85,8 @@ function init() {
         }
         player.pointAt({ x: (Math.random() * (MAX_WIDTH - (INDENT * 2))) + INDENT, y: (Math.random() * (MAX_HEIGHT - (INDENT * 2))) + INDENT });
         player.moveForward();
+
+        //player.destination = {x: 400, y: 400};
         player.destination = destList[i];
 
         //player.destination = { x: (Math.random() * (MAX_WIDTH - (INDENT * 2))) + INDENT, y: (Math.random() * (MAX_HEIGHT - (INDENT * 2))) + INDENT };
