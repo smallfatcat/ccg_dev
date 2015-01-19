@@ -36,6 +36,7 @@ var Stats = (function () {
         this.teamKillsA = 0;
         this.teamKillsB = 0;
         this.resetCountdown = 5;
+        this.playersMoving = 0;
     }
     return Stats;
 })();
@@ -103,6 +104,7 @@ var Player = (function (_super) {
         this.attackChance = properties.attackChance;
         this.attackers = 0;
         this.destination = { x: 0, y: 0 };
+        this.isMoving = false;
     }
     Player.prototype.moveTowards = function (pos) {
         var towardsVector = getVectorAB(this.pos, pos);

@@ -40,6 +40,7 @@ class Stats {
   teamKillsA: number;
   teamKillsB: number;
   resetCountdown: number;
+  playersMoving: number;
   constructor(properties: StatsProps) {
     this.startTime = properties.startTime;
     this.frameCounter = 0;
@@ -52,6 +53,7 @@ class Stats {
     this.teamKillsA = 0;
     this.teamKillsB = 0;
     this.resetCountdown = 5;
+    this.playersMoving = 0;
   }
 }
 
@@ -145,6 +147,7 @@ class Player extends Entity {
   team: number;
   attackers: number;
   destination: Vector2D;
+  isMoving: boolean;
   constructor(properties: PlayerProps) {
     super(properties);
     this.distances = [];
@@ -160,6 +163,7 @@ class Player extends Entity {
     this.attackChance = properties.attackChance;
     this.attackers = 0;
     this.destination = { x: 0, y: 0 };
+    this.isMoving = false;
   }
 
   moveTowards(pos: Vector2D) {

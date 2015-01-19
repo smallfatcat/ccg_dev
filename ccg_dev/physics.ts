@@ -5,7 +5,7 @@ function physics() {
   // Check if game is paused
   if (!gPause) {
     // Check for end of game
-    if (gStats.teamKillsA == TEAM_B_PLAYERS || gStats.teamKillsB == TEAM_A_PLAYERS) {
+    if (gStats.playersMoving == 0 ) {
       if(!gReset) {
         gReset = true;
         setTimeout(reset, 1000);
@@ -358,43 +358,55 @@ function physicsPlayer(player: Player) {
   player.acc = { x: 0, y: 0 };
   player.distances = [];
 
-  var destinationDistance = getDistance(player.pos, player.destination);
-  if (destinationDistance < 1 && destinationDistance > -1) {
-    player.stop();
-  }
-  else {
-    // Reorient algorithm
-    player.speed = PHYSICS_MAXRUN;
-    player.vel = reorient(player.vel, getVectorAB(player.pos, player.destination), player.id);
-    //var normalV: number = PHYSICS_MAXRUN / mag(player.vel);
-    //player.vel.x *= normalV;
-    //player.vel.y *= normalV;
+  // If player is moving run avoidance code
+  if (player.isMoving) {
+    var destinationDistance = getDistance(player.pos, player.destination);
+    if (destinationDistance < 1 ) {
+      player.stop();
+      player.isMoving = false;
+      gStats.playersMoving--;
+    }
+    else {
+      // Reorient algorithm
+      player.speed = PHYSICS_MAXRUN;
+      player.vel = reorient(player.vel, getVectorAB(player.pos, player.destination), player.id);
 
-    // Avoidance algorithm
-    var closestPlayerID: number = selectOtherPlayer(player.pos.x, player.pos.y, player.id);
-    if (closestPlayerID != -1) {
-      var closestPlayer: Player = gEntities[closestPlayerID];
-      var closesetDistance: number = getDistance(player.pos, closestPlayer.pos);
-      var detectRadius: number = player.collisionRadius + closestPlayer.collisionRadius + DETECT_RADIUS;
-      if (closesetDistance < detectRadius) {
-        //var brakingFactor = PHYSICS_MAXRUN * (closesetDistance / detectRadius) * (closesetDistance / detectRadius);
-        var brakingFactor = 2;
-        console.log(player.id + ' Avoiding: ' + closestPlayer.id);
-        player.vel = avoid(player.vel, getVectorAB(player.pos, closestPlayer.pos));
-        //var normalV: number = (brakingFactor) / mag(player.vel);
-        //player.vel.x *= normalV;
-        //player.vel.y *= normalV;
-        
+      // Avoidance algorithm
+      var closestPlayerID: number = selectOtherPlayer(player.pos.x, player.pos.y, player.id);
+      if (closestPlayerID != -1) {
+        var closestPlayer: Player = gEntities[closestPlayerID];
+        var closesetDistance: number = getDistance(player.pos, closestPlayer.pos);
+        var detectRadius: number = player.collisionRadius + closestPlayer.collisionRadius + DETECT_RADIUS;
+        if (closesetDistance < detectRadius) {
+          var brakingForce = calcBrakingForce(closesetDistance - player.collisionRadius - closestPlayer.collisionRadius);
+          player.speed = PHYSICS_MAXRUN * (1 - brakingForce);
+          console.log(player.id + ' Avoiding: ' + closestPlayer.id);
+          player.vel = avoid(player.vel, getVectorAB(player.pos, closestPlayer.pos));
+        }
       }
+      // Calculate slowdown for nearing destination
+      var destBrakingForce = calcBrakingForce(destinationDistance);
+      player.speed = Math.min(PHYSICS_MAXRUN * (1 - destBrakingForce), player.speed);
+      
+      // Set speed due to braking etc
+      var adjustedVel: Vector2D = normalize(player.vel);
+      adjustedVel.x *= player.speed;
+      adjustedVel.y *= player.speed;
+      player.vel = adjustedVel;
     }
   }
+
 
 }
 
 function calcBrakingForce(d: number) {
-  var A: number = 10000000;
-  var B: number = 0.1;
-  var brakingForce = A * Math.exp(-d) - B;
+  var A: number = 1.491824698;
+  var B: number = 0.670320046;
+  var normalFactor: number = 2.426595825;
+  var brakingForce = A * Math.exp(d / -10) - B;
+  brakingForce *= normalFactor;
+  brakingForce = Math.min(brakingForce, 0.8);
+  return brakingForce;
 }
 
 function applyGravity(player: Player, distanceObject: DistanceObject ) {

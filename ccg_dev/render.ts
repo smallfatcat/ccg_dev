@@ -37,7 +37,7 @@ function renderPlayArea() {
     if (gEntities[i].isAlive) {
       drawFilledCircle(ctx, gEntities[i].pos.x, gEntities[i].pos.y, gEntities[i].collisionRadius, gEntities[i].team == 0 ? 'red' : 'blue');
       drawCircle(ctx, gEntities[i].destination.x, gEntities[i].destination.y, gEntities[i].collisionRadius);
-      drawImage(ctx, gEntities[i].pos.x, gEntities[i].pos.y, gEntities[i].rotDegrees, 32, 'policeimg');
+      //drawImage(ctx, gEntities[i].pos.x, gEntities[i].pos.y, gEntities[i].rotDegrees, 32, 'policeimg');
       if (gEntities[i].isFighting) {
         drawRectangle(ctx, gEntities[i].pos.x - 12, gEntities[i].pos.y - 24, (24 / 100) * gEntities[i].health, 4, 'yellow');
       }
@@ -63,11 +63,12 @@ function updateInfoWindow() {
   html += '<br>currentTime: ' + gStats.currentTime;
   html += '<br>fps: ' + gStats.fps;
   html += '<br>lastFrameTime: ' + gStats.lastFrameTime;
-  html += '<br>kills: ' + gStats.kills;
-  html += '<br>teamKillsA: ' + gStats.teamKillsA;
-  html += '<br>teamKillsB: ' + gStats.teamKillsB;
+  //html += '<br>kills: ' + gStats.kills;
+  //html += '<br>teamKillsA: ' + gStats.teamKillsA;
+  //html += '<br>teamKillsB: ' + gStats.teamKillsB;
   html += '<br>playersAlive: ' + gStats.playersAlive;
-  html += '<br>bombsUsed: ' + gStats.bombsUsed;
+  //html += '<br>bombsUsed: ' + gStats.bombsUsed;
+  html += '<br>playersMoving: ' + gStats.playersMoving;
   if (gPause) {
     html += '<br><br>GAME PAUSED';
   }

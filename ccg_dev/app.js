@@ -17,9 +17,9 @@ var PHYSICS_MINDIST = 2;
 var MAX_TURN = 5;
 var DETECT_RADIUS = 8;
 
-var MAX_PLAYERS = 50;
-var TEAM_A_PLAYERS = 25;
-var TEAM_B_PLAYERS = 25;
+var MAX_PLAYERS = 100;
+var TEAM_A_PLAYERS = 50;
+var TEAM_B_PLAYERS = 50;
 
 var ELASTICITY_NORMAL = 1;
 
@@ -63,8 +63,12 @@ function init() {
     gStats = new Stats({ startTime: d.getTime() });
     gEntities = [];
 
-    var posList = createNonCollidingVectors(MAX_PLAYERS, INDENT, MAX_WIDTH - INDENT, ((DETECT_RADIUS * 2) + 32));
-    var destList = createNonCollidingVectors(MAX_PLAYERS, INDENT, MAX_WIDTH - INDENT, ((DETECT_RADIUS * 2) + 32));
+    //var posList: Vector2D[] = createNonCollidingVectors(MAX_PLAYERS, INDENT, MAX_WIDTH - INDENT, ((DETECT_RADIUS * 2) + 32));
+    //var destList: Vector2D[] = createNonCollidingVectors(MAX_PLAYERS, INDENT, MAX_WIDTH - INDENT, ((DETECT_RADIUS * 2) + 32));
+    var posList = createGrid(20, 400, 50, ((DETECT_RADIUS * 2) + 40), 5);
+    posList = posList.concat(createGrid(20, 100, 50, ((DETECT_RADIUS * 2) + 40), 5));
+    var destList = createGrid(20, 100, 50, ((DETECT_RADIUS * 2) + 40), 5);
+    destList = destList.concat(createGrid(20, 400, 50, ((DETECT_RADIUS * 2) + 40), 5));
 
     for (var i = 0; i < MAX_PLAYERS; i++) {
         var player = new Player({
@@ -82,6 +86,7 @@ function init() {
         if (i < TEAM_A_PLAYERS) {
             player.team = 1;
             player.damage = 1;
+            //player.collisionRadius = 32;
         }
         player.pointAt({ x: (Math.random() * (MAX_WIDTH - (INDENT * 2))) + INDENT, y: (Math.random() * (MAX_HEIGHT - (INDENT * 2))) + INDENT });
         player.moveForward();
@@ -91,6 +96,8 @@ function init() {
 
         //player.destination = { x: (Math.random() * (MAX_WIDTH - (INDENT * 2))) + INDENT, y: (Math.random() * (MAX_HEIGHT - (INDENT * 2))) + INDENT };
         //player.destination = { x: (i < (MAX_PLAYERS / 2) ? ((i*64) + 100) : ((i-(MAX_PLAYERS/2))*64)+100), y: ((i < MAX_PLAYERS/2) ? 200 : 600) };
+        player.isMoving = true;
+        gStats.playersMoving++;
         gEntities.push(player);
     }
     /*
@@ -147,13 +154,32 @@ window.onload = function () {
 
 function createNonCollidingVectors(n, min, max, spacing) {
     var vectorList = [];
-    var newVector;
     for (var i = 0; i < n; i++) {
         var candidateV = genRandomVector(min, max);
-        while (!checkIfSpaced(vectorList, spacing, candidateV)) {
+        var loopCount = 0;
+        while (!checkIfSpaced(vectorList, spacing, candidateV) && loopCount < 1000) {
             candidateV = genRandomVector(min, max);
+            loopCount++;
         }
         vectorList.push(candidateV);
+    }
+
+    return vectorList;
+}
+
+function createGrid(x, y, n, spacing, rows) {
+    var vectorList = [];
+    var rowLength = Math.ceil(n / rows);
+    for (var row = 0; row < rows; row++) {
+        for (var i = 0; i < rowLength; i++) {
+            var newVector = { x: 0, y: 0 };
+            newVector.x = x + (i * spacing);
+            newVector.y = y + (row * spacing);
+            vectorList.push(newVector);
+            if (vectorList.length == n) {
+                return vectorList;
+            }
+        }
     }
 
     return vectorList;
