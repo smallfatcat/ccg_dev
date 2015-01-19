@@ -93,19 +93,21 @@ function calcPlayerPhysics() {
             physicsPlayer(gEntities[i]);
         }
     }
-
+    /*
     // calculate collisions and store them in global array
     gCollisions = doCollisionChecks();
-
-    for (var i = 0; i < gCollisions.length; i++) {
-        // If entity is in fight mode, check fight priority
-        var source = gEntities[gCollisions[i].sourceID];
-        var target = gEntities[gCollisions[i].targetID];
-        setFighting(source, target);
+    
+    // Iterate through collisions array
+    for (var i: number = 0; i < gCollisions.length; i++) {
+    // If entity is in fight mode, check fight priority
+    var source: Player = gEntities[gCollisions[i].sourceID];
+    var target: Player = gEntities[gCollisions[i].targetID];
+    setFighting(source, target);
     }
-
+    
     // Perform Fights
     performFights();
+    */
 }
 
 function performFights() {
@@ -222,17 +224,20 @@ function reorient(v, t, id) {
         angle = angle + (Math.PI * 2);
     }
 
+    var angleDeg = (angle / (Math.PI * 2)) * 360;
+    angleDeg = angleDeg < 0 ? (angleDeg * -1) : angleDeg;
+
     var newV = { x: v.x, y: v.y };
 
     // if angle is positive turn right
     if (angle > 0) {
-        newV = turn(v, 'right', MAX_TURN / 2);
+        newV = turn(v, 'right', angleDeg / 2);
         //console.log('Angle: ' + angle + 'Turn: right ID: ' + id);
     }
 
     // if angle is negative turn left
     if (angle < 0) {
-        newV = turn(v, 'left', MAX_TURN / 2);
+        newV = turn(v, 'left', angleDeg / 2);
         //console.log('Angle: ' + angle + ' Turn: left ID: '+ id);
     }
 
@@ -259,13 +264,13 @@ function avoid(v, h) {
     var angleDeg = (angle / (Math.PI * 2)) * 360;
     angleDeg = angleDeg < 0 ? (angleDeg * -1) : angleDeg;
     if (angle > 0.00872664626) {
-        newV = turn(v, 'left', angleDeg / 2);
+        newV = turn(v, 'left', angleDeg);
         console.log('  left, angle: ' + angle + ' v: ' + v.x + ',' + v.y + ' h: ' + h.x + ',' + h.y);
     }
 
     // else turn right
     if (angle <= 0.00872664626) {
-        newV = turn(v, 'right', angleDeg / 2);
+        newV = turn(v, 'right', angleDeg);
         console.log('  right, angle: ' + angle + ' v: ' + v.x + ',' + v.y + ' h: ' + h.x + ',' + h.y);
     }
 
@@ -383,6 +388,12 @@ function physicsPlayer(player) {
             }
         }
     }
+}
+
+function calcBrakingForce(d) {
+    var A = 10000000;
+    var B = 0.1;
+    var brakingForce = A * Math.exp(-d) - B;
 }
 
 function applyGravity(player, distanceObject) {

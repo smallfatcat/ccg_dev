@@ -11,15 +11,15 @@
 var PHYSICS_TICK = 15;
 var PHYSICS_GRAVITY = 0;
 var PHYSICS_FRICTION = 1;
-var PHYSICS_MAXRUN = 20;
+var PHYSICS_MAXRUN = 80;
 var PHYSICS_MAXACC = 2000;
 var PHYSICS_MINDIST = 2;
 var MAX_TURN = 5;
 var DETECT_RADIUS = 8;
 
-var MAX_PLAYERS = 20;
-var TEAM_A_PLAYERS = 10;
-var TEAM_B_PLAYERS = 10;
+var MAX_PLAYERS = 50;
+var TEAM_A_PLAYERS = 25;
+var TEAM_B_PLAYERS = 25;
 
 var ELASTICITY_NORMAL = 1;
 
@@ -63,10 +63,13 @@ function init() {
     gStats = new Stats({ startTime: d.getTime() });
     gEntities = [];
 
+    var posList = createNonCollidingVectors(MAX_PLAYERS, INDENT, MAX_WIDTH - INDENT, ((DETECT_RADIUS * 2) + 32));
+    var destList = createNonCollidingVectors(MAX_PLAYERS, INDENT, MAX_WIDTH - INDENT, ((DETECT_RADIUS * 2) + 32));
+
     for (var i = 0; i < MAX_PLAYERS; i++) {
         var player = new Player({
             id: i,
-            pos: { x: (Math.random() * (MAX_WIDTH - (INDENT * 2))) + INDENT, y: (Math.random() * (MAX_HEIGHT - (INDENT * 2))) + INDENT },
+            pos: posList[i],
             iconID: 1,
             name: String(i),
             mass: MASS_PLAYER,
@@ -82,9 +85,10 @@ function init() {
         }
         player.pointAt({ x: (Math.random() * (MAX_WIDTH - (INDENT * 2))) + INDENT, y: (Math.random() * (MAX_HEIGHT - (INDENT * 2))) + INDENT });
         player.moveForward();
+        player.destination = destList[i];
 
         //player.destination = { x: (Math.random() * (MAX_WIDTH - (INDENT * 2))) + INDENT, y: (Math.random() * (MAX_HEIGHT - (INDENT * 2))) + INDENT };
-        player.destination = { x: (i < (MAX_PLAYERS / 2) ? ((i * 64) + 100) : ((i - (MAX_PLAYERS / 2)) * 64) + 100), y: ((i < MAX_PLAYERS / 2) ? 200 : 600) };
+        //player.destination = { x: (i < (MAX_PLAYERS / 2) ? ((i*64) + 100) : ((i-(MAX_PLAYERS/2))*64)+100), y: ((i < MAX_PLAYERS/2) ? 200 : 600) };
         gEntities.push(player);
     }
     /*
@@ -138,4 +142,40 @@ window.onload = function () {
     // Start physics processing
     setTimeout(physics, PHYSICS_TICK);
 };
+
+function createNonCollidingVectors(n, min, max, spacing) {
+    var vectorList = [];
+    var newVector;
+    for (var i = 0; i < n; i++) {
+        var candidateV = genRandomVector(min, max);
+        while (!checkIfSpaced(vectorList, spacing, candidateV)) {
+            candidateV = genRandomVector(min, max);
+        }
+        vectorList.push(candidateV);
+    }
+
+    return vectorList;
+}
+
+function genRandomVector(min, max) {
+    var v;
+    v = { x: randRange(min, max), y: randRange(min, max) };
+    return v;
+}
+
+function randRange(min, max) {
+    var rand = (Math.random() * (max - min)) + min;
+    return rand;
+}
+
+function checkIfSpaced(vectorList, spacing, checkVector) {
+    var isSpaced = true;
+    for (var i = 0; i < vectorList.length; i++) {
+        if (getDistance(checkVector, vectorList[i]) < spacing) {
+            isSpaced = false;
+            return isSpaced;
+        }
+    }
+    return isSpaced;
+}
 //# sourceMappingURL=app.js.map

@@ -30,27 +30,27 @@ function renderPlayArea() {
   var ctx = c.getContext("2d");
 
   // Clear the Play Area Canvas
-  //ctx.clearRect(0, 0, g_playArea.width, g_playArea.height);
+  ctx.clearRect(0, 0, g_playArea.width, g_playArea.height);
 
   // Each Alive entity
   for (var i = 0; i < MAX_PLAYERS; i++) {
     if (gEntities[i].isAlive) {
-      drawCircle(ctx, gEntities[i].pos.x, gEntities[i].pos.y, gEntities[i].collisionRadius, gEntities[i].team == 0 ? 'red' : 'blue');
-      drawCircle(ctx, gEntities[i].destination.x, gEntities[i].destination.y, gEntities[i].collisionRadius, 'grey');
+      drawFilledCircle(ctx, gEntities[i].pos.x, gEntities[i].pos.y, gEntities[i].collisionRadius, gEntities[i].team == 0 ? 'red' : 'blue');
+      drawCircle(ctx, gEntities[i].destination.x, gEntities[i].destination.y, gEntities[i].collisionRadius);
       drawImage(ctx, gEntities[i].pos.x, gEntities[i].pos.y, gEntities[i].rotDegrees, 32, 'policeimg');
       if (gEntities[i].isFighting) {
         drawRectangle(ctx, gEntities[i].pos.x - 12, gEntities[i].pos.y - 24, (24 / 100) * gEntities[i].health, 4, 'yellow');
       }
     }
     else {
-      drawCircle(ctx, gEntities[i].pos.x, gEntities[i].pos.y, 5, gEntities[i].team == 0 ? 'red' : 'blue');
+      drawFilledCircle(ctx, gEntities[i].pos.x, gEntities[i].pos.y, 5, gEntities[i].team == 0 ? 'red' : 'blue');
     }
   }
 
   // Each Bomb
   for (i = 0; i < gBombs.length; i++) {
     if (gBombs[i].isAlive) {
-      drawCircle(ctx, gBombs[i].pos.x, gBombs[i].pos.y, gBombs[i].radius, 'red');
+      drawFilledCircle(ctx, gBombs[i].pos.x, gBombs[i].pos.y, gBombs[i].radius, 'red');
     }
   }
 
@@ -79,11 +79,17 @@ function updateInfoWindow() {
   $('#infowindow').append(html);
 }
 
-function drawCircle(ctx, x: number, y: number, radius: number, color: string) {
+function drawFilledCircle(ctx, x: number, y: number, radius: number, color: string) {
   ctx.beginPath();
   ctx.arc(x, y, radius, 0, 2 * Math.PI);
   ctx.fillStyle = color;
   ctx.fill();
+  ctx.stroke();
+}
+
+function drawCircle(ctx, x: number, y: number, radius: number) {
+  ctx.beginPath();
+  ctx.arc(x, y, radius, 0, 2 * Math.PI);
   ctx.stroke();
 }
 

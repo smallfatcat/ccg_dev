@@ -15,15 +15,15 @@
 var PHYSICS_TICK: number = 15;
 var PHYSICS_GRAVITY: number = 0;
 var PHYSICS_FRICTION: number = 1;
-var PHYSICS_MAXRUN: number = 20;
+var PHYSICS_MAXRUN: number = 80;
 var PHYSICS_MAXACC: number = 2000;
 var PHYSICS_MINDIST: number = 2;
 var MAX_TURN: number = 5;
 var DETECT_RADIUS: number = 8;
 
-var MAX_PLAYERS: number = 20;
-var TEAM_A_PLAYERS: number = 10;
-var TEAM_B_PLAYERS: number = 10;
+var MAX_PLAYERS: number = 50;
+var TEAM_A_PLAYERS: number = 25;
+var TEAM_B_PLAYERS: number = 25;
 
 var ELASTICITY_NORMAL: number = 1;
 //var GRAVITY_CONSTANT: number = 0.0000000000667384;
@@ -67,11 +67,14 @@ function init() {
   var d = new Date();
   gStats = new Stats({ startTime: d.getTime() });
   gEntities = [];
+
+  var posList: Vector2D[] = createNonCollidingVectors(MAX_PLAYERS, INDENT, MAX_WIDTH - INDENT, ((DETECT_RADIUS * 2) + 32));
+  var destList: Vector2D[] = createNonCollidingVectors(MAX_PLAYERS, INDENT, MAX_WIDTH - INDENT, ((DETECT_RADIUS * 2) + 32));
   // Set up some players
   for (var i = 0; i < MAX_PLAYERS; i++) {
     var player: Player = new Player({
       id: i,
-      pos: { x: (Math.random() * (MAX_WIDTH - (INDENT * 2))) + INDENT, y: (Math.random() * (MAX_HEIGHT - (INDENT * 2))) + INDENT },
+      pos: posList[i],
       iconID: 1,
       name: String(i),
       mass: MASS_PLAYER,
@@ -79,7 +82,7 @@ function init() {
       health: 100,
       damage: 1,
       attackChance: 10,
-      team: 0
+      team: 0,
     });
     if (i < TEAM_A_PLAYERS) {
       player.team = 1;
@@ -87,8 +90,9 @@ function init() {
     }
     player.pointAt({ x: (Math.random() * (MAX_WIDTH - (INDENT * 2))) + INDENT, y: (Math.random() * (MAX_HEIGHT - (INDENT * 2))) + INDENT });
     player.moveForward();
+    player.destination = destList[i];
     //player.destination = { x: (Math.random() * (MAX_WIDTH - (INDENT * 2))) + INDENT, y: (Math.random() * (MAX_HEIGHT - (INDENT * 2))) + INDENT };
-    player.destination = { x: (i < (MAX_PLAYERS / 2) ? ((i*64) + 100) : ((i-(MAX_PLAYERS/2))*64)+100), y: ((i < MAX_PLAYERS/2) ? 200 : 600) };
+    //player.destination = { x: (i < (MAX_PLAYERS / 2) ? ((i*64) + 100) : ((i-(MAX_PLAYERS/2))*64)+100), y: ((i < MAX_PLAYERS/2) ? 200 : 600) };
     gEntities.push(player);
   }
   
@@ -140,3 +144,39 @@ window.onload = () => {
   // Start physics processing
   setTimeout(physics, PHYSICS_TICK);
 };
+
+function createNonCollidingVectors(n: number, min: number, max: number, spacing: number) {
+  var vectorList: Vector2D[] = [];
+  var newVector: Vector2D;
+  for (var i = 0; i < n; i++) {
+    var candidateV: Vector2D = genRandomVector(min, max);
+    while (!checkIfSpaced(vectorList, spacing, candidateV)) {
+      candidateV = genRandomVector(min, max);
+    }
+    vectorList.push(candidateV);
+  }
+
+  return vectorList;
+}
+
+function genRandomVector(min: number, max: number) {
+  var v: Vector2D;
+  v = { x: randRange(min, max), y: randRange(min, max) };
+  return v;
+}
+
+function randRange(min: number, max: number) {
+  var rand: number = (Math.random() * (max - min)) + min;
+  return rand;
+}
+
+function checkIfSpaced(vectorList: Vector2D[], spacing: number, checkVector: Vector2D) {
+  var isSpaced: boolean = true;
+  for (var i = 0; i < vectorList.length ; i++) {
+    if (getDistance(checkVector, vectorList[i]) < spacing) {
+      isSpaced = false;
+      return isSpaced;
+    }
+  }
+  return isSpaced;
+}

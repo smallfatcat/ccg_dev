@@ -94,6 +94,7 @@ function calcPlayerPhysics() {
       physicsPlayer(gEntities[i]);
     }
   }
+  /*
   // calculate collisions and store them in global array
   gCollisions = doCollisionChecks();
 
@@ -107,6 +108,7 @@ function calcPlayerPhysics() {
 
   // Perform Fights
   performFights();
+*/
 }
 
 function performFights() {
@@ -226,15 +228,18 @@ function reorient(v: Vector2D, t: Vector2D, id: number) {
     angle = angle + (Math.PI * 2);
   }
 
+  var angleDeg: number = (angle / (Math.PI * 2)) * 360;
+  angleDeg = angleDeg < 0 ? (angleDeg * -1) : angleDeg;
+
   var newV: Vector2D = {x: v.x, y: v.y};
   // if angle is positive turn right
   if (angle > 0 ) {
-    newV = turn(v, 'right', MAX_TURN/2);
+    newV = turn(v, 'right', angleDeg/2);
     //console.log('Angle: ' + angle + 'Turn: right ID: ' + id);
   }
   // if angle is negative turn left
   if (angle < 0 ) {
-    newV = turn(v, 'left', MAX_TURN/2);
+    newV = turn(v, 'left', angleDeg/2);
     //console.log('Angle: ' + angle + ' Turn: left ID: '+ id);
   }
   // if angle is zero do nothing
@@ -260,12 +265,12 @@ function avoid(v: Vector2D, h: Vector2D) {
   var angleDeg: number = (angle / (Math.PI * 2)) * 360; 
   angleDeg = angleDeg < 0 ? (angleDeg * -1) : angleDeg;
   if (angle > 0.00872664626 ) {
-    newV = turn(v, 'left', angleDeg/2);
+    newV = turn(v, 'left', angleDeg);
     console.log('  left, angle: ' + angle + ' v: ' + v.x + ',' + v.y + ' h: ' + h.x + ',' + h.y);
   }
   // else turn right
   if (angle <= 0.00872664626 ) {
-    newV = turn(v, 'right', angleDeg/2);
+    newV = turn(v, 'right', angleDeg);
     console.log('  right, angle: ' + angle + ' v: ' + v.x + ',' + v.y + ' h: ' + h.x + ',' + h.y);
   }
 
@@ -384,6 +389,12 @@ function physicsPlayer(player: Player) {
     }
   }
 
+}
+
+function calcBrakingForce(d: number) {
+  var A: number = 10000000;
+  var B: number = 0.1;
+  var brakingForce = A * Math.exp(-d) - B;
 }
 
 function applyGravity(player: Player, distanceObject: DistanceObject ) {
