@@ -22,6 +22,65 @@ var PlayArea = (function () {
     return PlayArea;
 })();
 
+var Vector2D = (function () {
+    function Vector2D(properties) {
+        this.x = properties.x;
+        this.y = properties.y;
+    }
+    // Methods
+    Vector2D.prototype.normalize = function () {
+        var distance = Math.sqrt((this.x * this.x) + (this.y * this.y));
+        this.x = this.x / distance;
+        this.y = this.y / distance;
+        return this;
+    };
+
+    Vector2D.prototype.getNormalized = function () {
+        var distance = Math.sqrt((this.x * this.x) + (this.y * this.y));
+        var x = this.x / distance;
+        var y = this.y / distance;
+        var normalizedVector = new Vector2D({ x: x, y: y });
+        return normalizedVector;
+    };
+
+    Vector2D.prototype.getDistance = function (b) {
+        var x = b.x - this.x;
+        var y = b.y - this.y;
+        var distance = Math.sqrt((x * x) + (y * y));
+        return distance;
+    };
+
+    Vector2D.prototype.getLength = function () {
+        var length = Math.sqrt((this.x * this.x) + (this.y * this.y));
+        return length;
+    };
+
+    Vector2D.prototype.getVectorTo = function (B) {
+        var x = B.x - this.x;
+        var y = B.y - this.y;
+        var AB = new Vector2D({ x: x, y: x });
+        return AB;
+    };
+
+    Vector2D.prototype.getAngleTo = function (B) {
+        var angleToB = Math.atan2(B.y - this.y, B.x - this.x);
+        return angleToB;
+    };
+
+    Vector2D.prototype.getAngle = function () {
+        var angle = Math.atan2(this.y, this.x);
+        return angle;
+    };
+
+    Vector2D.prototype.getAngleBetween = function (B) {
+        var angleToA = Math.atan2(this.y, this.x);
+        var angleToB = Math.atan2(B.y, B.x);
+        var angleAB = angleToB - angleToA;
+        return angleAB;
+    };
+    return Vector2D;
+})();
+
 // Stats Class
 var Stats = (function () {
     function Stats(properties) {
@@ -56,8 +115,8 @@ var Entity = (function () {
     function Entity(properties) {
         this.id = properties.id;
         this.pos = properties.pos;
-        this.vel = { x: 0, y: 0 };
-        this.acc = { x: 0, y: 0 };
+        this.vel = new Vector2D({ x: 0, y: 0 });
+        this.acc = new Vector2D({ x: 0, y: 0 });
         this.rotDegrees = 0;
         this.isAlive = true;
         this.speed = PHYSICS_MAXRUN;
@@ -97,18 +156,20 @@ var Player = (function (_super) {
         this.mass = properties.mass;
         this.collisionRadius = properties.collisionRadius;
         this.health = properties.health;
-        this.fight = { targetID: -1, targetDirection: { x: 0, y: 0 }, targetHealth: 100 };
+        var zeroVector = new Vector2D({ x: 0, y: 0 });
+        this.fight = { targetID: -1, targetDirection: zeroVector, targetHealth: 100 };
         this.isFighting = false;
         this.team = properties.team;
         this.damage = properties.damage;
         this.attackChance = properties.attackChance;
         this.attackers = 0;
-        this.destination = { x: 0, y: 0 };
+        this.destination = new Vector2D({ x: 0, y: 0 });
         this.isMoving = false;
+        this.isSelected = false;
     }
     Player.prototype.moveTowards = function (pos) {
         var towardsVector = getVectorAB(this.pos, pos);
-        normalize(towardsVector);
+        towardsVector.normalize();
         this.vel.x = towardsVector.x * this.speed;
         this.vel.y = towardsVector.y * this.speed;
     };
@@ -144,5 +205,14 @@ var Bomb = (function (_super) {
         this.damage = properties.damage;
     }
     return Bomb;
+})(Entity);
+
+var Pointer = (function (_super) {
+    __extends(Pointer, _super);
+    function Pointer(properties) {
+        _super.call(this, properties);
+        this.mode = properties.mode;
+    }
+    return Pointer;
 })(Entity);
 //# sourceMappingURL=classes.js.map

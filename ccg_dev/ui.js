@@ -1,9 +1,26 @@
 ﻿// UI functions
 function mouseDown(event) {
     console.log('Mouse:' + event.which + ' Xpos:' + event.pageX + ' Ypos:' + event.pageY);
-    g_pointer.pos.x = event.pageX;
-    g_pointer.pos.y = event.pageY;
-    selectPlayer(event.pageX, event.pageY);
+    var PointerPos = new Vector2D({ x: event.pageX, y: event.pageY });
+    g_pointer.pos = PointerPos;
+    if (g_pointer.mode == 'select') {
+        var selectedPlayer = selectPlayer(event.pageX, event.pageY);
+        selectedPlayer.isSelected = true;
+        gSelectedPlayerID = selectedPlayer.id;
+        g_pointer.mode = 'makedest';
+        return;
+    }
+
+    if (g_pointer.mode == 'makedest') {
+        gEntities[gSelectedPlayerID].destination = PointerPos;
+        gEntities[gSelectedPlayerID].isSelected = false;
+        gEntities[gSelectedPlayerID].isMoving = true;
+        gEntities[gSelectedPlayerID].pointAt(gEntities[gSelectedPlayerID].destination);
+        gEntities[gSelectedPlayerID].moveForward;
+        gSelectedPlayerID = -1;
+        g_pointer.mode = 'select';
+        return;
+    }
     /*
     var bomb = new Bomb({ id: gBombs.length, pos: { x: event.pageX, y: event.pageY }, maxRadius: 150, minRadius: 1, maxLifeTime: 1, damage: 1 })
     gBombs.push(bomb);
@@ -26,10 +43,11 @@ function keyUp(event) {
 }
 
 function selectPlayer(x, y) {
+    var checkPos = new Vector2D({ x: x, y: y });
     var closestDistance = -1;
     var closestPlayerID = -1;
     for (var i = 0; i < gEntities.length; i++) {
-        var distance = getDistance({ x: x, y: y }, gEntities[i].pos);
+        var distance = getDistance(checkPos, gEntities[i].pos);
         if (distance < closestDistance || closestDistance == -1) {
             closestDistance = distance;
             closestPlayerID = gEntities[i].id;
@@ -39,48 +57,16 @@ function selectPlayer(x, y) {
     return gEntities[closestPlayerID];
 }
 
-function isInfront(a, b) {
-    var angle = calculateAngle(a.vel, getVectorAB(a.pos, b.pos));
-
-    //if angle is above 180 reverse it
-    if (angle > Math.PI) {
-        angle = angle - (Math.PI * 2);
-    }
-    if (angle < -Math.PI) {
-        angle = angle + (Math.PI * 2);
-    }
-
-    // if angle is less than 90 b is in front of a
-    if (angle < Math.PI / 2 && angle > Math.PI / -2) {
-        return true;
-    } else {
-        return false;
-    }
-}
-
-function selectOtherPlayer(x, y, id) {
-    var closestDistance = -1;
-    var closestPlayerID = -1;
-    var player = gEntities[id];
-    for (var i = 0; i < gEntities.length; i++) {
-        // Make sure we skip the player we are checking from
-        if (id != gEntities[i].id && gEntities[i].isAlive) {
-            // Check if other player is in front of this player
-            if (isInfront(player, gEntities[i])) {
-                var distance = getDistance({ x: x, y: y }, gEntities[i].pos);
-                if (distance < closestDistance || closestDistance == -1) {
-                    closestDistance = distance;
-                    closestPlayerID = gEntities[i].id;
-                }
-            }
-        }
-    }
-
-    //console.log('closestPlayerID: ' + closestPlayerID);
-    return closestPlayerID;
-}
-
 function resetButton() {
     init();
+}
+
+function updateStats() {
+    var d = new Date();
+    var currentTime = d.getTime();
+    gStats.lastFrameTime = currentTime - gStats.currentTime;
+    gStats.currentTime = currentTime;
+    gStats.frameCounter++;
+    gStats.fps = Math.round(1000 / gStats.lastFrameTime);
 }
 //# sourceMappingURL=ui.js.map

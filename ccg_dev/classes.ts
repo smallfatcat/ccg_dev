@@ -27,6 +27,71 @@ interface PlayAreaProps {
   containerID: string;
 }
 
+class Vector2D {
+  x: number;
+  y: number;
+  constructor(properties: Vector2DProps) {
+    this.x = properties.x;
+    this.y = properties.y;
+  }
+  // Methods
+  normalize() {
+    var distance: number = Math.sqrt((this.x * this.x) + (this.y * this.y));
+    this.x = this.x / distance;
+    this.y = this.y / distance;
+    return this;
+  }
+
+  getNormalized() {
+    var distance: number = Math.sqrt((this.x * this.x) + (this.y * this.y));
+    var x: number = this.x / distance;
+    var y: number = this.y / distance;
+    var normalizedVector: Vector2D = new Vector2D({x: x, y: y});
+    return normalizedVector;
+  }
+
+  getDistance(b: Vector2D) {
+  var x: number = b.x - this.x;
+  var y: number = b.y - this.y;
+  var distance: number = Math.sqrt((x * x) + (y * y));
+  return distance;
+  }
+
+  getLength() {
+    var length: number = Math.sqrt((this.x * this.x) + (this.y * this.y));
+    return length;
+  }
+
+  getVectorTo(B: Vector2D){
+    var x: number = B.x - this.x;
+    var y: number = B.y - this.y;
+    var AB: Vector2D = new Vector2D({ x: x, y: x })
+    return AB;
+  }
+
+  getAngleTo(B: Vector2D) {
+    var angleToB: number = Math.atan2(B.y - this.y, B.x - this.x);
+    return angleToB;
+  }
+
+  getAngle() {
+    var angle: number = Math.atan2(this.y, this.x);
+    return angle;
+  }
+
+  getAngleBetween(B: Vector2D) {
+    var angleToA: number = Math.atan2(this.y, this.x);
+    var angleToB: number = Math.atan2(B.y, B.x);
+    var angleAB: number = angleToB - angleToA;
+    return angleAB;
+  }
+}
+
+interface Vector2DProps {
+  x: number;
+  y: number;
+}
+
 // Stats Class
 class Stats {
   startTime: number;
@@ -94,8 +159,8 @@ class Entity {
   constructor(properties: EntProps) {
     this.id = properties.id;
     this.pos = properties.pos;
-    this.vel = { x: 0, y: 0 };
-    this.acc = { x: 0, y: 0 };
+    this.vel = new Vector2D({ x: 0, y: 0 });
+    this.acc = new Vector2D({ x: 0, y: 0 });
     this.rotDegrees = 0;
     this.isAlive = true;
     this.speed = PHYSICS_MAXRUN;
@@ -148,6 +213,7 @@ class Player extends Entity {
   attackers: number;
   destination: Vector2D;
   isMoving: boolean;
+  isSelected: boolean;
   constructor(properties: PlayerProps) {
     super(properties);
     this.distances = [];
@@ -156,19 +222,21 @@ class Player extends Entity {
     this.mass = properties.mass;
     this.collisionRadius = properties.collisionRadius;
     this.health = properties.health;
-    this.fight = { targetID: -1, targetDirection: { x: 0, y: 0 }, targetHealth: 100 };
+    var zeroVector: Vector2D = new Vector2D({ x: 0, y: 0 }); 
+    this.fight = { targetID: -1, targetDirection: zeroVector, targetHealth: 100 };
     this.isFighting = false;
     this.team = properties.team;
     this.damage = properties.damage;
     this.attackChance = properties.attackChance;
     this.attackers = 0;
-    this.destination = { x: 0, y: 0 };
+    this.destination = new Vector2D({ x: 0, y: 0 });
     this.isMoving = false;
+    this.isSelected = false;
   }
 
   moveTowards(pos: Vector2D) {
     var towardsVector: Vector2D = getVectorAB(this.pos, pos);
-    normalize(towardsVector);
+    towardsVector.normalize();
     this.vel.x = towardsVector.x * this.speed;
     this.vel.y = towardsVector.y * this.speed;
   }
@@ -227,11 +295,6 @@ interface BombProps extends EntProps {
   damage: number;
 }
 
-interface Vector2D {
-  x: number;
-  y: number;
-}
-
 interface DistanceObject {
   targetID: number;
   distance: number;
@@ -248,6 +311,18 @@ interface Fight {
   targetID: number;
   targetHealth: number;
   targetDirection: Vector2D;
+}
+
+class Pointer extends Entity {
+  mode: string;
+  constructor(properties: PointerProps) {
+    super(properties);
+    this.mode = properties.mode;
+  }
+}
+
+interface PointerProps extends EntProps {
+  mode: string;
 }
 
 

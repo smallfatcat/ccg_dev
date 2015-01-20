@@ -5,7 +5,8 @@ function renderPlayArea() {
   if (!gPlayAreaCanvasCreated) {
     $('#content').empty();
     var html: string = g_playArea.generateHtml();
-    gInfoWindow = new InfoWindow({ pos: { x: 800, y: 0 }, visible: true});
+    var infoWindowPos: Vector2D = new Vector2D({ x: 800, y: 0 });
+    gInfoWindow = new InfoWindow({ pos: infoWindowPos, visible: true});
     html += '<div id="infowindow" class="infowindow" style="left: ' + gInfoWindow.pos.x + 'px; top: ' + gInfoWindow.pos.y +'px;">Test</div>';
     // write scene to html
     $('#content').append(html);
@@ -117,69 +118,4 @@ function drawImage(ctx, x: number, y: number, a: number, width: number, imgID: s
   //ctx.fillRect(-50, -50, 100, 100);
   ctx.drawImage(image, width / -2, width / -2);
   ctx.setTransform(1, 0, 0, 1, 0, 0);
-}
-
-function render() {
-  $('#content').empty();
-  // Set up 
-  var html: string = '';
-  // Each test object
-  for (var i = 0; i < MAX_PLAYERS; i++) {
-    if (gEntities[i].isAlive) {
-      html += renderPlayer(gEntities[i]);
-    }
-  }
-  // Each Bomb
-  for (i = 0; i < gBombs.length; i++) {
-    if (gBombs[i].isAlive) {
-      html += '<div id="bombDiv' + gBombs[i].id + '" class="absolute" style="left: ' + (gBombs[i].pos.x - 150) + 'px; top: ' + (gBombs[i].pos.y - 150) + 'px;"><canvas id = "bomb' + gBombs[i].id + '" width = "300" height = "300";" ></div>';
-    }
-  }
-
-  // Mouse pointer
-  html += '<div id="mouseHit" class="absolute" style="left: ' + g_pointer.pos.x + 'px; top: ' + g_pointer.pos.y + 'px;"><img id="imouseHit" style="width: 32px;" src="crosshair.png"></div>';
-
-  // write scene to html
-  $('#content').append(html);
-
-  // draw bombs
-  for (i = 0; i < gBombs.length; i++) {
-    if (gBombs[i].isAlive) {
-      drawBomb(gBombs[i]);
-    }
-  }
-  
-  // rotate each test object
-  //for (var i = 0; i < MAX_PLAYERS; i++) {
-  //  $('#i' + i).rotate(gEntities[i].rotDegrees);
-  //}
-}
-
-function drawBomb(bomb: Bomb) {
-  
-  var c = <HTMLCanvasElement> document.getElementById("bomb"+bomb.id);
-  if (c == null) {
-    console.log('break');
-  }
-  var ctx = c.getContext("2d");
-  ctx.beginPath();
-  ctx.arc(150, 150, bomb.radius, 0, 2 * Math.PI);
-  ctx.stroke();
-
-  //var img = document.getElementById("i0");
-  //img.src = 'tile_grey_32.png';
-  //ctx.drawImage(img, 0, 0);
-}
-
-function renderPlayer(player: Player) {
-  var playerDiv: string = '';
-  //playerDiv += '<div id="playerDiv' + player.id + '" class="absolute" style="left: ' + player.pos.x + 'px; top: ' + player.pos.y + 'px;">' + player.name + ' x: ' + player.pos.x + ' y: ' + player.pos.y + '</div>';
-  var imgSrc: string = '';
-  //imgSrc = player.id < (MAX_PLAYERS / 2) ? 'ball.png' : 'ball_red.png';
-  imgSrc = 'police.png';
-  playerDiv += '<div id="playerDiv' + player.id + '" class="absolute" style="left: ' + player.pos.x + 'px; top: ' + player.pos.y + 'px;"><img id="i' + player.id + '" style="width: 32px;" src="' + imgSrc + '"></div>';
-
-  return playerDiv;
-  //$('#content').append(playerDiv);
-  //$('#playerDiv').animate({ 'left': player.pos.x + 'px', 'top': player.pos.y + 'px' });
 }

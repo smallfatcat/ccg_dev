@@ -9,6 +9,10 @@
 /// <reference path="classes.ts" />
 /// <reference path="render.ts" />
 /// <reference path="physics.ts" />
+/// <reference path="ai.ts" />
+/// <reference path="util.ts" />
+/// <reference path="navigation.ts" />
+/// <reference path="legacy.ts" />
 /// <reference path="jquery.d.ts" />
 
 // Constants
@@ -21,9 +25,9 @@ var PHYSICS_MINDIST: number = 2;
 var MAX_TURN: number = 5;
 var DETECT_RADIUS: number = 8;
 
-var MAX_PLAYERS: number = 100;
-var TEAM_A_PLAYERS: number = 50;
-var TEAM_B_PLAYERS: number = 50;
+var MAX_PLAYERS: number = 200;
+var TEAM_A_PLAYERS: number = 100;
+var TEAM_B_PLAYERS: number = 100;
 
 var ELASTICITY_NORMAL: number = 1;
 //var GRAVITY_CONSTANT: number = 0.0000000000667384;
@@ -40,10 +44,11 @@ var gBombs: Bomb[] = [];
 var gCollisions: Collision[] = [];
 
 // Global objects
-var g_pointer: Entity;
+var g_pointer: Pointer;
 var g_playArea: PlayArea;
 var gStats: Stats;
 var gInfoWindow: InfoWindow;
+var gSelectedPlayerID: number = -1;
 
 // Flags
 var gPause: boolean = false;
@@ -54,10 +59,12 @@ var gReset: boolean = false;
 
 
 // Set up pointer
-g_pointer = new Entity({ id: 0, pos: { x: 0, y: 0 }, iconID: 2, name: 'Pointer' });
+var pointerPos: Vector2D = new Vector2D({ x: 0, y: 0 });
+g_pointer = new Pointer({ id: 0, pos: pointerPos, mode: 'select'});
 
 // Set up playing area canvas
-g_playArea = new PlayArea({ pos: {x: 0, y: 0 }, width: 800, height: 800, containerID: 'playAreaCanvas' });
+var playAreaPos: Vector2D = new Vector2D({ x: 0, y: 0 });
+g_playArea = new PlayArea({ pos: playAreaPos, width: 800, height: 800, containerID: 'playAreaCanvas' });
 
 // Initialize
 init();
@@ -68,12 +75,12 @@ function init() {
   gStats = new Stats({ startTime: d.getTime() });
   gEntities = [];
 
-  //var posList: Vector2D[] = createNonCollidingVectors(MAX_PLAYERS, INDENT, MAX_WIDTH - INDENT, ((DETECT_RADIUS * 2) + 32));
+  var posList: Vector2D[] = createNonCollidingVectors(MAX_PLAYERS, INDENT, MAX_WIDTH - INDENT, ((DETECT_RADIUS * 2) + 32));
   //var destList: Vector2D[] = createNonCollidingVectors(MAX_PLAYERS, INDENT, MAX_WIDTH - INDENT, ((DETECT_RADIUS * 2) + 32));
-  var posList: Vector2D[] = createGrid(20, 400, 50, ((DETECT_RADIUS * 2) + 40), 5);
-  posList = posList.concat(createGrid(20, 100, 50, ((DETECT_RADIUS * 2) + 40), 5));
-  var destList: Vector2D[] = createGrid(20, 100, 50, ((DETECT_RADIUS * 2) + 40), 5);
-  destList = destList.concat(createGrid(20, 400, 50, ((DETECT_RADIUS * 2) + 40), 5));
+  //var posList: Vector2D[] = createGrid(20, 400, 100, ((DETECT_RADIUS * 2) + 16), 5);
+  //posList = posList.concat(createGrid(20, 100, 100, ((DETECT_RADIUS * 2) + 16), 5));
+  var destList: Vector2D[] = createGrid(20, 100, 100, 16, 5);
+  destList = destList.concat(createGrid(20, 400, 100, ((DETECT_RADIUS * 2) + 16), 5));
 
   // Set up some players
   for (var i = 0; i < MAX_PLAYERS; i++) {
@@ -83,7 +90,7 @@ function init() {
       iconID: 1,
       name: String(i),
       mass: MASS_PLAYER,
-      collisionRadius: 16,
+      collisionRadius: 8,
       health: 100,
       damage: 1,
       attackChance: 10,
@@ -94,7 +101,8 @@ function init() {
       player.damage = 1;
       //player.collisionRadius = 32;
     }
-    player.pointAt({ x: (Math.random() * (MAX_WIDTH - (INDENT * 2))) + INDENT, y: (Math.random() * (MAX_HEIGHT - (INDENT * 2))) + INDENT });
+    var pointVector: Vector2D = new Vector2D({ x: (Math.random() * (MAX_WIDTH - (INDENT * 2))) + INDENT, y: (Math.random() * (MAX_HEIGHT - (INDENT * 2))) + INDENT });
+    player.pointAt(pointVector);
     player.moveForward();
     //player.destination = {x: 400, y: 400};
     player.destination = destList[i];
@@ -174,7 +182,7 @@ function createGrid(x: number,y: number, n: number, spacing: number, rows: numbe
   var rowLength = Math.ceil(n/rows);
   for (var row = 0; row < rows; row++) {
     for (var i = 0; i < rowLength; i++) {
-      var newVector: Vector2D = { x: 0, y: 0 };
+      var newVector: Vector2D = new Vector2D({ x: 0, y: 0 });
       newVector.x = x + (i * spacing);
       newVector.y = y + (row * spacing);
       vectorList.push(newVector);
@@ -188,8 +196,7 @@ function createGrid(x: number,y: number, n: number, spacing: number, rows: numbe
 }
 
 function genRandomVector(min: number, max: number) {
-  var v: Vector2D;
-  v = { x: randRange(min, max), y: randRange(min, max) };
+  var v: Vector2D = new Vector2D({ x: randRange(min, max), y: randRange(min, max) });
   return v;
 }
 

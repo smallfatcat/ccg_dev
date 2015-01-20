@@ -23,11 +23,15 @@
     <Content Include="web.config" />
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="ai.ts" />
     <TypeScriptCompile Include="app.ts" />
     <TypeScriptCompile Include="classes.ts" />
+    <TypeScriptCompile Include="legacy.ts" />
+    <TypeScriptCompile Include="navigation.ts" />
     <TypeScriptCompile Include="physics.ts" />
     <TypeScriptCompile Include="render.ts" />
     <TypeScriptCompile Include="ui.ts" />
+    <TypeScriptCompile Include="util.ts" />
   </ItemGroup>
   <ItemGroup>
     <None Include="web.Debug.config">

@@ -6,6 +6,10 @@
 /// <reference path="classes.ts" />
 /// <reference path="render.ts" />
 /// <reference path="physics.ts" />
+/// <reference path="ai.ts" />
+/// <reference path="util.ts" />
+/// <reference path="navigation.ts" />
+/// <reference path="legacy.ts" />
 /// <reference path="jquery.d.ts" />
 // Constants
 var PHYSICS_TICK = 15;
@@ -17,9 +21,9 @@ var PHYSICS_MINDIST = 2;
 var MAX_TURN = 5;
 var DETECT_RADIUS = 8;
 
-var MAX_PLAYERS = 100;
-var TEAM_A_PLAYERS = 50;
-var TEAM_B_PLAYERS = 50;
+var MAX_PLAYERS = 200;
+var TEAM_A_PLAYERS = 100;
+var TEAM_B_PLAYERS = 100;
 
 var ELASTICITY_NORMAL = 1;
 
@@ -40,6 +44,7 @@ var g_pointer;
 var g_playArea;
 var gStats;
 var gInfoWindow;
+var gSelectedPlayerID = -1;
 
 // Flags
 var gPause = false;
@@ -49,10 +54,12 @@ var gApproachTimerFlag = false;
 var gReset = false;
 
 // Set up pointer
-g_pointer = new Entity({ id: 0, pos: { x: 0, y: 0 }, iconID: 2, name: 'Pointer' });
+var pointerPos = new Vector2D({ x: 0, y: 0 });
+g_pointer = new Pointer({ id: 0, pos: pointerPos, mode: 'select' });
 
 // Set up playing area canvas
-g_playArea = new PlayArea({ pos: { x: 0, y: 0 }, width: 800, height: 800, containerID: 'playAreaCanvas' });
+var playAreaPos = new Vector2D({ x: 0, y: 0 });
+g_playArea = new PlayArea({ pos: playAreaPos, width: 800, height: 800, containerID: 'playAreaCanvas' });
 
 // Initialize
 init();
@@ -63,12 +70,13 @@ function init() {
     gStats = new Stats({ startTime: d.getTime() });
     gEntities = [];
 
-    //var posList: Vector2D[] = createNonCollidingVectors(MAX_PLAYERS, INDENT, MAX_WIDTH - INDENT, ((DETECT_RADIUS * 2) + 32));
+    var posList = createNonCollidingVectors(MAX_PLAYERS, INDENT, MAX_WIDTH - INDENT, ((DETECT_RADIUS * 2) + 32));
+
     //var destList: Vector2D[] = createNonCollidingVectors(MAX_PLAYERS, INDENT, MAX_WIDTH - INDENT, ((DETECT_RADIUS * 2) + 32));
-    var posList = createGrid(20, 400, 50, ((DETECT_RADIUS * 2) + 40), 5);
-    posList = posList.concat(createGrid(20, 100, 50, ((DETECT_RADIUS * 2) + 40), 5));
-    var destList = createGrid(20, 100, 50, ((DETECT_RADIUS * 2) + 40), 5);
-    destList = destList.concat(createGrid(20, 400, 50, ((DETECT_RADIUS * 2) + 40), 5));
+    //var posList: Vector2D[] = createGrid(20, 400, 100, ((DETECT_RADIUS * 2) + 16), 5);
+    //posList = posList.concat(createGrid(20, 100, 100, ((DETECT_RADIUS * 2) + 16), 5));
+    var destList = createGrid(20, 100, 100, 16, 5);
+    destList = destList.concat(createGrid(20, 400, 100, ((DETECT_RADIUS * 2) + 16), 5));
 
     for (var i = 0; i < MAX_PLAYERS; i++) {
         var player = new Player({
@@ -77,7 +85,7 @@ function init() {
             iconID: 1,
             name: String(i),
             mass: MASS_PLAYER,
-            collisionRadius: 16,
+            collisionRadius: 8,
             health: 100,
             damage: 1,
             attackChance: 10,
@@ -88,7 +96,8 @@ function init() {
             player.damage = 1;
             //player.collisionRadius = 32;
         }
-        player.pointAt({ x: (Math.random() * (MAX_WIDTH - (INDENT * 2))) + INDENT, y: (Math.random() * (MAX_HEIGHT - (INDENT * 2))) + INDENT });
+        var pointVector = new Vector2D({ x: (Math.random() * (MAX_WIDTH - (INDENT * 2))) + INDENT, y: (Math.random() * (MAX_HEIGHT - (INDENT * 2))) + INDENT });
+        player.pointAt(pointVector);
         player.moveForward();
 
         //player.destination = {x: 400, y: 400};
@@ -172,7 +181,7 @@ function createGrid(x, y, n, spacing, rows) {
     var rowLength = Math.ceil(n / rows);
     for (var row = 0; row < rows; row++) {
         for (var i = 0; i < rowLength; i++) {
-            var newVector = { x: 0, y: 0 };
+            var newVector = new Vector2D({ x: 0, y: 0 });
             newVector.x = x + (i * spacing);
             newVector.y = y + (row * spacing);
             vectorList.push(newVector);
@@ -186,8 +195,7 @@ function createGrid(x, y, n, spacing, rows) {
 }
 
 function genRandomVector(min, max) {
-    var v;
-    v = { x: randRange(min, max), y: randRange(min, max) };
+    var v = new Vector2D({ x: randRange(min, max), y: randRange(min, max) });
     return v;
 }
 
