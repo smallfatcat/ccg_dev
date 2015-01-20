@@ -4,6 +4,7 @@
 // January 2015
 // Reference files
 /// <reference path="classes.ts" />
+/// <reference path="player_class.ts" />
 /// <reference path="render.ts" />
 /// <reference path="physics.ts" />
 /// <reference path="ai.ts" />
@@ -15,7 +16,7 @@
 var PHYSICS_TICK = 15;
 var PHYSICS_GRAVITY = 0;
 var PHYSICS_FRICTION = 1;
-var PHYSICS_MAXRUN = 100;
+var PHYSICS_MAXSPEED = 100;
 var PHYSICS_MAXACC = 2000;
 var PHYSICS_MINDIST = 2;
 var MAX_TURN = 5;
@@ -35,16 +36,16 @@ var MAX_HEIGHT = 800;
 var INDENT = 100;
 
 // Global Arrays
-var gEntities = [];
+var gPlayers = [];
 var gBombs = [];
 var gCollisions = [];
 
 // Global objects
-var g_pointer;
-var g_playArea;
+var gPointer;
+var gPlayArea;
 var gStats;
 var gInfoWindow;
-var gSelectedPlayerID = -1;
+var gSelectedPlayerIDs = [];
 
 // Flags
 var gPause = false;
@@ -55,11 +56,11 @@ var gReset = false;
 
 // Set up pointer
 var pointerPos = new Vector2D({ x: 0, y: 0 });
-g_pointer = new Pointer({ id: 0, pos: pointerPos, mode: 'select' });
+gPointer = new Pointer({ id: 0, pos: pointerPos, mode: 'select' });
 
 // Set up playing area canvas
 var playAreaPos = new Vector2D({ x: 0, y: 0 });
-g_playArea = new PlayArea({ pos: playAreaPos, width: 800, height: 800, containerID: 'playAreaCanvas' });
+gPlayArea = new PlayArea({ pos: playAreaPos, width: 800, height: 800, containerID: 'playAreaCanvas' });
 
 // Initialize
 init();
@@ -68,7 +69,7 @@ function init() {
     // Set up stats
     var d = new Date();
     gStats = new Stats({ startTime: d.getTime() });
-    gEntities = [];
+    gPlayers = [];
 
     var posList = createNonCollidingVectors(MAX_PLAYERS, INDENT, MAX_WIDTH - INDENT, ((DETECT_RADIUS * 2) + 32));
 
@@ -107,34 +108,34 @@ function init() {
         //player.destination = { x: (i < (MAX_PLAYERS / 2) ? ((i*64) + 100) : ((i-(MAX_PLAYERS/2))*64)+100), y: ((i < MAX_PLAYERS/2) ? 200 : 600) };
         player.isMoving = true;
         gStats.playersMoving++;
-        gEntities.push(player);
+        gPlayers.push(player);
     }
     /*
-    gEntities[0].pos = { x: 200, y: 400 };
-    gEntities[0].pointAt({ x: 600, y: 400 });
-    gEntities[0].moveForward();
-    gEntities[0].destination = { x: 600, y: 400 };
+    gPlayers[0].pos = { x: 200, y: 400 };
+    gPlayers[0].pointAt({ x: 600, y: 400 });
+    gPlayers[0].moveForward();
+    gPlayers[0].destination = { x: 600, y: 400 };
     
-    gEntities[1].pos = { x: 600, y: 400 };
-    gEntities[1].pointAt({ x: 200, y: 400 });
-    gEntities[1].moveForward();
-    gEntities[1].destination = { x: 200, y: 400 };
+    gPlayers[1].pos = { x: 600, y: 400 };
+    gPlayers[1].pointAt({ x: 200, y: 400 });
+    gPlayers[1].moveForward();
+    gPlayers[1].destination = { x: 200, y: 400 };
     
-    gEntities[2].pos = { x: 400, y: 200 };
-    gEntities[2].pointAt({ x: 400, y: 600 });
-    gEntities[2].moveForward();
-    gEntities[2].destination = { x: 400, y: 600 };
+    gPlayers[2].pos = { x: 400, y: 200 };
+    gPlayers[2].pointAt({ x: 400, y: 600 });
+    gPlayers[2].moveForward();
+    gPlayers[2].destination = { x: 400, y: 600 };
     
     
-    gEntities[3].pos = { x: 400, y: 600 };
-    gEntities[3].pointAt({ x: 400, y: 200 });
-    gEntities[3].moveForward();
-    gEntities[3].destination = { x: 400, y: 200 };
+    gPlayers[3].pos = { x: 400, y: 600 };
+    gPlayers[3].pointAt({ x: 400, y: 200 });
+    gPlayers[3].moveForward();
+    gPlayers[3].destination = { x: 400, y: 200 };
     
-    gEntities[4].pos = { x: 600, y: 600 };
-    gEntities[4].pointAt({ x: 400, y: 200 });
-    gEntities[4].moveForward();
-    gEntities[4].destination = { x: 600, y: 600 };
+    gPlayers[4].pos = { x: 600, y: 600 };
+    gPlayers[4].pointAt({ x: 400, y: 200 });
+    gPlayers[4].moveForward();
+    gPlayers[4].destination = { x: 600, y: 600 };
     */
     //makeAllThingsApproachEnemies();
     //setTimeout(setApproachTimerFlag, 1000);

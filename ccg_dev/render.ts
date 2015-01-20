@@ -4,7 +4,7 @@ function renderPlayArea() {
   // If this is the first time, create the canvas and write it to the page
   if (!gPlayAreaCanvasCreated) {
     $('#content').empty();
-    var html: string = g_playArea.generateHtml();
+    var html: string = gPlayArea.generateHtml();
     var infoWindowPos: Vector2D = new Vector2D({ x: 800, y: 0 });
     gInfoWindow = new InfoWindow({ pos: infoWindowPos, visible: true});
     html += '<div id="infowindow" class="infowindow" style="left: ' + gInfoWindow.pos.x + 'px; top: ' + gInfoWindow.pos.y +'px;">Test</div>';
@@ -27,25 +27,33 @@ function renderPlayArea() {
 
   // Use canvas
 
-  var c = <HTMLCanvasElement> document.getElementById(g_playArea.containerID);
+  var c = <HTMLCanvasElement> document.getElementById(gPlayArea.containerID);
   var ctx = c.getContext("2d");
 
   // Clear the Play Area Canvas
-  ctx.clearRect(0, 0, g_playArea.width, g_playArea.height);
+  ctx.clearRect(0, 0, gPlayArea.width, gPlayArea.height);
 
   // Each Alive entity
   for (var i = 0; i < MAX_PLAYERS; i++) {
-    if (gEntities[i].isAlive) {
-      drawFilledCircle(ctx, gEntities[i].pos.x, gEntities[i].pos.y, gEntities[i].collisionRadius, gEntities[i].team == 0 ? 'red' : 'blue');
-      drawCircle(ctx, gEntities[i].destination.x, gEntities[i].destination.y, gEntities[i].collisionRadius);
-      //drawImage(ctx, gEntities[i].pos.x, gEntities[i].pos.y, gEntities[i].rotDegrees, 32, 'policeimg');
-      if (gEntities[i].isFighting) {
-        drawRectangle(ctx, gEntities[i].pos.x - 12, gEntities[i].pos.y - 24, (24 / 100) * gEntities[i].health, 4, 'yellow');
+    if (gPlayers[i].isAlive) {
+      drawFilledCircle(ctx, gPlayers[i].pos.x, gPlayers[i].pos.y, gPlayers[i].collisionRadius, gPlayers[i].team == 0 ? 'red' : 'blue');
+      drawCircle(ctx, gPlayers[i].destination.x, gPlayers[i].destination.y, gPlayers[i].collisionRadius);
+      //drawImage(ctx, gPlayers[i].pos.x, gPlayers[i].pos.y, gPlayers[i].rotDegrees, 32, 'policeimg');
+      if (gPlayers[i].isFighting) {
+        drawFilledRectangle(ctx, gPlayers[i].pos.x - 12, gPlayers[i].pos.y - 24, (24 / 100) * gPlayers[i].health, 4, 'yellow');
+      }
+      if (gPlayers[i].isSelected) {
+        drawRectangle(ctx, gPlayers[i].pos.x - gPlayers[i].collisionRadius - 2, gPlayers[i].pos.y - gPlayers[i].collisionRadius - 2, (gPlayers[i].collisionRadius*2) + 4, (gPlayers[i].collisionRadius*2) + 4);
       }
     }
     else {
-      drawFilledCircle(ctx, gEntities[i].pos.x, gEntities[i].pos.y, 5, gEntities[i].team == 0 ? 'red' : 'blue');
+      drawFilledCircle(ctx, gPlayers[i].pos.x, gPlayers[i].pos.y, 5, gPlayers[i].team == 0 ? 'red' : 'blue');
     }
+  }
+
+  // Draw selection box
+  if (gPointer.mode == 'drag') {
+    drawRectangle(ctx, gPointer.startDrag.x, gPointer.startDrag.y, gPointer.endDrag.x - gPointer.startDrag.x, gPointer.endDrag.y - gPointer.startDrag.y);
   }
 
   // Each Bomb
@@ -100,7 +108,15 @@ function drawCircle(ctx, x: number, y: number, radius: number) {
   ctx.stroke();
 }
 
-function drawRectangle(ctx, x: number, y: number, width: number, height: number, color: string) {
+function drawRectangle(ctx, x: number, y: number, width: number, height: number) {
+  ctx.beginPath();
+  ctx.rect(x, y, width, height);
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = 'black';
+  ctx.stroke();
+}
+
+function drawFilledRectangle(ctx, x: number, y: number, width: number, height: number, color: string) {
   ctx.beginPath();
   ctx.rect(x, y, width, height);
   ctx.fillStyle = color;

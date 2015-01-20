@@ -1,7 +1,7 @@
 ﻿function doCollisionChecks() {
   var collisions: Collision[] = [];
   var players: Player[] = [];
-  players = gEntities.slice(0);
+  players = gPlayers.slice(0);
   // Each player
   for (var i: number = 0; i < MAX_PLAYERS; i++) {
     var source: Player = players.pop();
@@ -74,9 +74,9 @@ function checkBombHit(bomb: Bomb, player: Player) {
 
 function applyBombDamage(bomb: Bomb) {
   for (var i = 0; i < MAX_PLAYERS; i++) {
-    if (gEntities[i].isAlive) {
-      if (checkBombHit(bomb, gEntities[i])) {
-        gEntities[i].isAlive = false;
+    if (gPlayers[i].isAlive) {
+      if (checkBombHit(bomb, gPlayers[i])) {
+        gPlayers[i].isAlive = false;
         gStats.kills++;
       }
     }
@@ -230,8 +230,8 @@ function render() {
   var html: string = '';
   // Each test object
   for (var i = 0; i < MAX_PLAYERS; i++) {
-    if (gEntities[i].isAlive) {
-      html += renderPlayer(gEntities[i]);
+    if (gPlayers[i].isAlive) {
+      html += renderPlayer(gPlayers[i]);
     }
   }
   // Each Bomb
@@ -242,7 +242,7 @@ function render() {
   }
 
   // Mouse pointer
-  html += '<div id="mouseHit" class="absolute" style="left: ' + g_pointer.pos.x + 'px; top: ' + g_pointer.pos.y + 'px;"><img id="imouseHit" style="width: 32px;" src="crosshair.png"></div>';
+  html += '<div id="mouseHit" class="absolute" style="left: ' + gPointer.pos.x + 'px; top: ' + gPointer.pos.y + 'px;"><img id="imouseHit" style="width: 32px;" src="crosshair.png"></div>';
 
   // write scene to html
   $('#content').append(html);
@@ -256,7 +256,7 @@ function render() {
 
   // rotate each test object
   //for (var i = 0; i < MAX_PLAYERS; i++) {
-  //  $('#i' + i).rotate(gEntities[i].rotDegrees);
+  //  $('#i' + i).rotate(gPlayers[i].rotDegrees);
   //}
 }
 

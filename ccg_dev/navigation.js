@@ -6,18 +6,18 @@
         gStats.playersMoving--;
     } else {
         // Reorient algorithm
-        player.speed = PHYSICS_MAXRUN;
+        player.speed = PHYSICS_MAXSPEED;
         player.vel = reorient(player.vel, getVectorAB(player.pos, player.destination), player.id);
 
         // Avoidance algorithm
         var closestPlayerID = selectOtherPlayer(player.pos.x, player.pos.y, player.id);
         if (closestPlayerID != -1) {
-            var closestPlayer = gEntities[closestPlayerID];
+            var closestPlayer = gPlayers[closestPlayerID];
             var closesetDistance = getDistance(player.pos, closestPlayer.pos);
             var detectRadius = player.collisionRadius + closestPlayer.collisionRadius + DETECT_RADIUS;
             if (closesetDistance < detectRadius) {
                 var brakingForce = calcBrakingForce(closesetDistance - player.collisionRadius - closestPlayer.collisionRadius);
-                player.speed = PHYSICS_MAXRUN * (1 - brakingForce);
+                player.speed = PHYSICS_MAXSPEED * (1 - brakingForce);
 
                 //console.log(player.id + ' Avoiding: ' + closestPlayer.id);
                 player.vel = avoid(player.vel, getVectorAB(player.pos, closestPlayer.pos));
@@ -26,7 +26,7 @@
 
         // Calculate slowdown for nearing destination
         var destBrakingForce = calcBrakingForce(destinationDistance);
-        player.speed = Math.min(PHYSICS_MAXRUN * (1 - destBrakingForce), player.speed);
+        player.speed = Math.min(PHYSICS_MAXSPEED * (1 - destBrakingForce), player.speed);
 
         // Set speed due to braking etc
         var adjustedVel = player.vel.normalize();
@@ -116,6 +116,7 @@ function calcBrakingForce(d) {
     var brakingForce = A * Math.exp(d / -10) - B;
     brakingForce *= normalFactor;
     brakingForce = Math.min(brakingForce, 0.8);
+    brakingForce *= 0.5;
     return brakingForce;
 }
 
@@ -142,16 +143,16 @@ function selectOtherPlayer(x, y, id) {
     var checkPos = new Vector2D({ x: x, y: y });
     var closestDistance = -1;
     var closestPlayerID = -1;
-    var player = gEntities[id];
-    for (var i = 0; i < gEntities.length; i++) {
+    var player = gPlayers[id];
+    for (var i = 0; i < gPlayers.length; i++) {
         // Make sure we skip the player we are checking from
-        if (id != gEntities[i].id && gEntities[i].isAlive) {
+        if (id != gPlayers[i].id && gPlayers[i].isAlive) {
             // Check if other player is in front of this player
-            if (isInfront(player, gEntities[i])) {
-                var distance = getDistance(checkPos, gEntities[i].pos);
+            if (isInfront(player, gPlayers[i])) {
+                var distance = getDistance(checkPos, gPlayers[i].pos);
                 if (distance < closestDistance || closestDistance == -1) {
                     closestDistance = distance;
-                    closestPlayerID = gEntities[i].id;
+                    closestPlayerID = gPlayers[i].id;
                 }
             }
         }

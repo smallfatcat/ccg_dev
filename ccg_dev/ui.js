@@ -2,23 +2,35 @@
 function mouseDown(event) {
     console.log('Mouse:' + event.which + ' Xpos:' + event.pageX + ' Ypos:' + event.pageY);
     var PointerPos = new Vector2D({ x: event.pageX, y: event.pageY });
-    g_pointer.pos = PointerPos;
-    if (g_pointer.mode == 'select') {
-        var selectedPlayer = selectPlayer(event.pageX, event.pageY);
-        selectedPlayer.isSelected = true;
-        gSelectedPlayerID = selectedPlayer.id;
-        g_pointer.mode = 'makedest';
-        return;
+    gPointer.pos = PointerPos;
+    if (gPointer.mode == 'select') {
+        deselectPlayers();
+        var selectedID = checkMouseHit(gPointer.pos);
+        if (selectedID != -1) {
+            var selectedPlayer = gPlayers[selectedID];
+            selectedPlayer.isSelected = true;
+            gSelectedPlayerIDs.push(selectedPlayer.id);
+            gPointer.mode = 'makedest';
+            return;
+        } else {
+            gPointer.startDrag.x = event.pageX;
+            gPointer.startDrag.y = event.pageY;
+            gPointer.endDrag.x = event.pageX;
+            gPointer.endDrag.y = event.pageY;
+            document.body.addEventListener('mousemove', onMouseMove);
+            document.body.addEventListener('mouseup', onMouseUp);
+            gPointer.mode = 'drag';
+        }
     }
 
-    if (g_pointer.mode == 'makedest') {
-        gEntities[gSelectedPlayerID].destination = PointerPos;
-        gEntities[gSelectedPlayerID].isSelected = false;
-        gEntities[gSelectedPlayerID].isMoving = true;
-        gEntities[gSelectedPlayerID].pointAt(gEntities[gSelectedPlayerID].destination);
-        gEntities[gSelectedPlayerID].moveForward;
-        gSelectedPlayerID = -1;
-        g_pointer.mode = 'select';
+    if (gPointer.mode == 'makedest') {
+        gPlayers[gSelectedPlayerIDs[0]].destination = PointerPos;
+        gPlayers[gSelectedPlayerIDs[0]].isSelected = false;
+        gPlayers[gSelectedPlayerIDs[0]].moveTowards(gPlayers[gSelectedPlayerIDs[0]].destination);
+        gPlayers[gSelectedPlayerIDs[0]].isMoving = true;
+        gStats.playersMoving++;
+        gSelectedPlayerIDs.pop();
+        gPointer.mode = 'select';
         return;
     }
     /*
@@ -26,6 +38,18 @@ function mouseDown(event) {
     gBombs.push(bomb);
     gStats.bombsUsed++;
     */
+}
+
+function onMouseMove(event) {
+    gPointer.endDrag.x = event.pageX;
+    gPointer.endDrag.y = event.pageY;
+}
+
+function onMouseUp(event) {
+    selectPlayersInBox();
+    gPointer.mode = 'select';
+    document.body.removeEventListener('mousemove', onMouseMove);
+    document.body.removeEventListener('mouseup', onMouseUp);
 }
 
 function keyDown(event) {
@@ -46,15 +70,15 @@ function selectPlayer(x, y) {
     var checkPos = new Vector2D({ x: x, y: y });
     var closestDistance = -1;
     var closestPlayerID = -1;
-    for (var i = 0; i < gEntities.length; i++) {
-        var distance = getDistance(checkPos, gEntities[i].pos);
+    for (var i = 0; i < gPlayers.length; i++) {
+        var distance = getDistance(checkPos, gPlayers[i].pos);
         if (distance < closestDistance || closestDistance == -1) {
             closestDistance = distance;
-            closestPlayerID = gEntities[i].id;
+            closestPlayerID = gPlayers[i].id;
         }
     }
     console.log('closestPlayerID: ' + closestPlayerID);
-    return gEntities[closestPlayerID];
+    return gPlayers[closestPlayerID];
 }
 
 function resetButton() {
@@ -68,5 +92,45 @@ function updateStats() {
     gStats.currentTime = currentTime;
     gStats.frameCounter++;
     gStats.fps = Math.round(1000 / gStats.lastFrameTime);
+}
+
+function checkMouseHit(mousePos) {
+    var minDistance = -1;
+    var hitID = -1;
+    for (var i = 0; i < gPlayers.length; i++) {
+        var checkRadius = gPlayers[i].collisionRadius;
+        var distance = getDistance(mousePos, gPlayers[i].pos);
+        if (distance <= checkRadius) {
+            if (distance < minDistance || minDistance == -1) {
+                minDistance = distance;
+                hitID = gPlayers[i].id;
+            }
+        }
+    }
+    return hitID;
+}
+
+function deselectPlayers() {
+    for (var i = 0; i < gSelectedPlayerIDs.length; i++) {
+        gPlayers[gSelectedPlayerIDs[i]].isSelected = false;
+    }
+    gSelectedPlayerIDs = [];
+}
+
+function selectPlayersInBox() {
+    for (var i = 0; i < gPlayers.length; i++) {
+        if (checkPlayerInBox(gPlayers[i], gPointer.startDrag, gPointer.endDrag)) {
+            gPlayers[i].isSelected = true;
+            gSelectedPlayerIDs.push(gPlayers[i].id);
+        }
+    }
+}
+
+function checkPlayerInBox(player, startBox, endBox) {
+    var inBox = false;
+    if (player.pos.x - player.collisionRadius > startBox.x && player.pos.x + player.collisionRadius < endBox.x && player.pos.y - player.collisionRadius > startBox.y && player.pos.y + player.collisionRadius < endBox.y) {
+        inBox = true;
+    }
+    return inBox;
 }
 //# sourceMappingURL=ui.js.map

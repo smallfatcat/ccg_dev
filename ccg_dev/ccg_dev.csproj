@@ -29,6 +29,7 @@
     <TypeScriptCompile Include="legacy.ts" />
     <TypeScriptCompile Include="navigation.ts" />
     <TypeScriptCompile Include="physics.ts" />
+    <TypeScriptCompile Include="player_class.ts" />
     <TypeScriptCompile Include="render.ts" />
     <TypeScriptCompile Include="ui.ts" />
     <TypeScriptCompile Include="util.ts" />

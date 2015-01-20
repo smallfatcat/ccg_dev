@@ -119,7 +119,7 @@ var Entity = (function () {
         this.acc = new Vector2D({ x: 0, y: 0 });
         this.rotDegrees = 0;
         this.isAlive = true;
-        this.speed = PHYSICS_MAXRUN;
+        this.speed = PHYSICS_MAXSPEED;
     }
     Entity.prototype.show = function () {
     };
@@ -146,53 +146,6 @@ var Prop = (function (_super) {
     return Prop;
 })(Entity);
 
-var Player = (function (_super) {
-    __extends(Player, _super);
-    function Player(properties) {
-        _super.call(this, properties);
-        this.distances = [];
-        this.name = properties.name;
-        this.iconID = properties.iconID;
-        this.mass = properties.mass;
-        this.collisionRadius = properties.collisionRadius;
-        this.health = properties.health;
-        var zeroVector = new Vector2D({ x: 0, y: 0 });
-        this.fight = { targetID: -1, targetDirection: zeroVector, targetHealth: 100 };
-        this.isFighting = false;
-        this.team = properties.team;
-        this.damage = properties.damage;
-        this.attackChance = properties.attackChance;
-        this.attackers = 0;
-        this.destination = new Vector2D({ x: 0, y: 0 });
-        this.isMoving = false;
-        this.isSelected = false;
-    }
-    Player.prototype.moveTowards = function (pos) {
-        var towardsVector = getVectorAB(this.pos, pos);
-        towardsVector.normalize();
-        this.vel.x = towardsVector.x * this.speed;
-        this.vel.y = towardsVector.y * this.speed;
-    };
-
-    Player.prototype.pointAt = function (pos) {
-        var towardsVector = getVectorAB(this.pos, pos);
-        var rotRadians = Math.atan2(towardsVector.y, towardsVector.x);
-        this.rotDegrees = ((rotRadians / (Math.PI * 2)) * 360) + 90;
-    };
-
-    Player.prototype.moveForward = function () {
-        var rotRadians = ((this.rotDegrees - 90) / 360) * (Math.PI * 2);
-        this.vel.x = Math.cos(rotRadians) * this.speed;
-        this.vel.y = Math.sin(rotRadians) * this.speed;
-    };
-
-    Player.prototype.stop = function () {
-        this.vel.x = 0;
-        this.vel.y = 0;
-    };
-    return Player;
-})(Entity);
-
 var Bomb = (function (_super) {
     __extends(Bomb, _super);
     function Bomb(properties) {
@@ -212,6 +165,8 @@ var Pointer = (function (_super) {
     function Pointer(properties) {
         _super.call(this, properties);
         this.mode = properties.mode;
+        this.startDrag = new Vector2D({ x: 0, y: 0 });
+        this.endDrag = new Vector2D({ x: 0, y: 0 });
     }
     return Pointer;
 })(Entity);

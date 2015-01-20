@@ -46,9 +46,9 @@ function setFighting(source, target) {
 }
 
 function performFights() {
-    for (var i = 0; i < gEntities.length; i++) {
-        var player = gEntities[i];
-        var target = gEntities[player.fight.targetID];
+    for (var i = 0; i < gPlayers.length; i++) {
+        var player = gPlayers[i];
+        var target = gPlayers[player.fight.targetID];
         if (player.isFighting) {
             if (target.isAlive) {
                 if (attackRoll(player.attackChance)) {
@@ -59,7 +59,7 @@ function performFights() {
                         gStats.kills++;
                         gStats.playersAlive--;
                         player.isFighting = false;
-                        gEntities[target.fight.targetID].attackers--;
+                        gPlayers[target.fight.targetID].attackers--;
                         target.isFighting = false;
                         player.pointAt(nearestEnemyPos(player.pos, player.team));
                         player.moveForward();
@@ -83,8 +83,8 @@ function nearestEnemyPos(myPos, myTeam) {
     var enemyPos = new Vector2D({ x: 400, y: 400 });
     var distance = 0;
     var minDistance = -1;
-    for (var i = 0; i < gEntities.length; i++) {
-        var enemy = gEntities[i];
+    for (var i = 0; i < gPlayers.length; i++) {
+        var enemy = gPlayers[i];
         if (enemy.isAlive && enemy.team != myTeam && enemy.attackers < 2) {
             distance = getDistance(myPos, enemy.pos);
             if (distance < minDistance || minDistance == -1) {
@@ -97,10 +97,10 @@ function nearestEnemyPos(myPos, myTeam) {
 }
 
 function makeAllThingsApproachEnemies() {
-    for (var i = 0; i < gEntities.length; i++) {
-        if (!gEntities[i].isFighting) {
-            gEntities[i].pointAt(nearestEnemyPos(gEntities[i].pos, gEntities[i].team));
-            gEntities[i].moveForward();
+    for (var i = 0; i < gPlayers.length; i++) {
+        if (!gPlayers[i].isFighting) {
+            gPlayers[i].pointAt(nearestEnemyPos(gPlayers[i].pos, gPlayers[i].team));
+            gPlayers[i].moveForward();
         }
     }
 }

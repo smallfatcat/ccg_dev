@@ -48,9 +48,9 @@ function setFighting(source: Player, target: Player) {
 } 
 
 function performFights() {
-  for (var i: number = 0; i < gEntities.length; i++) {
-    var player: Player = gEntities[i];
-    var target: Player = gEntities[player.fight.targetID];
+  for (var i: number = 0; i < gPlayers.length; i++) {
+    var player: Player = gPlayers[i];
+    var target: Player = gPlayers[player.fight.targetID];
     if (player.isFighting) {
       if (target.isAlive) {
         if (attackRoll(player.attackChance)) {
@@ -61,7 +61,7 @@ function performFights() {
             gStats.kills++;
             gStats.playersAlive--;
             player.isFighting = false;
-            gEntities[target.fight.targetID].attackers--;
+            gPlayers[target.fight.targetID].attackers--;
             target.isFighting = false;
             player.pointAt(nearestEnemyPos(player.pos, player.team));
             player.moveForward();
@@ -86,8 +86,8 @@ function nearestEnemyPos(myPos: Vector2D, myTeam: number) {
   var enemyPos: Vector2D = new Vector2D({ x: 400, y: 400 });
   var distance: number = 0;
   var minDistance = -1;
-  for (var i: number = 0; i < gEntities.length; i++) {
-    var enemy: Player = gEntities[i];
+  for (var i: number = 0; i < gPlayers.length; i++) {
+    var enemy: Player = gPlayers[i];
     if (enemy.isAlive && enemy.team != myTeam && enemy.attackers < 2) {
       distance = getDistance(myPos, enemy.pos);
       if (distance < minDistance || minDistance == -1) {
@@ -100,10 +100,10 @@ function nearestEnemyPos(myPos: Vector2D, myTeam: number) {
 }
 
 function makeAllThingsApproachEnemies() {
-  for (var i: number = 0; i < gEntities.length; i++) {
-    if (!gEntities[i].isFighting) {
-      gEntities[i].pointAt(nearestEnemyPos(gEntities[i].pos, gEntities[i].team));
-      gEntities[i].moveForward();
+  for (var i: number = 0; i < gPlayers.length; i++) {
+    if (!gPlayers[i].isFighting) {
+      gPlayers[i].pointAt(nearestEnemyPos(gPlayers[i].pos, gPlayers[i].team));
+      gPlayers[i].moveForward();
     }
   }
 }

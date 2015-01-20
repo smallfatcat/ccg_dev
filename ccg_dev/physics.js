@@ -32,9 +32,9 @@ function physics() {
 
 function calcPlayerPhysics() {
     for (var i = 0; i < MAX_PLAYERS; i++) {
-        if (gEntities[i].isAlive) {
+        if (gPlayers[i].isAlive) {
             // Do physics for all test objects
-            physicsPlayer(gEntities[i]);
+            physicsPlayer(gPlayers[i]);
         }
     }
     /*
@@ -44,8 +44,8 @@ function calcPlayerPhysics() {
     // Iterate through collisions array
     for (var i: number = 0; i < gCollisions.length; i++) {
     // If entity is in fight mode, check fight priority
-    var source: Player = gEntities[gCollisions[i].sourceID];
-    var target: Player = gEntities[gCollisions[i].targetID];
+    var source: Player = gPlayers[gCollisions[i].sourceID];
+    var target: Player = gPlayers[gCollisions[i].targetID];
     setFighting(source, target);
     }
     

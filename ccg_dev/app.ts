@@ -7,6 +7,7 @@
 // Reference files
 
 /// <reference path="classes.ts" />
+/// <reference path="player_class.ts" />
 /// <reference path="render.ts" />
 /// <reference path="physics.ts" />
 /// <reference path="ai.ts" />
@@ -16,39 +17,39 @@
 /// <reference path="jquery.d.ts" />
 
 // Constants
-var PHYSICS_TICK: number = 15;
-var PHYSICS_GRAVITY: number = 0;
-var PHYSICS_FRICTION: number = 1;
-var PHYSICS_MAXRUN: number = 100;
-var PHYSICS_MAXACC: number = 2000;
-var PHYSICS_MINDIST: number = 2;
-var MAX_TURN: number = 5;
-var DETECT_RADIUS: number = 8;
+var PHYSICS_TICK: number       = 15;
+var PHYSICS_GRAVITY: number    = 0;
+var PHYSICS_FRICTION: number   = 1;
+var PHYSICS_MAXSPEED: number   = 100;
+var PHYSICS_MAXACC: number     = 2000;
+var PHYSICS_MINDIST: number    = 2;
+var MAX_TURN: number           = 5;
+var DETECT_RADIUS: number      = 8;
 
-var MAX_PLAYERS: number = 200;
-var TEAM_A_PLAYERS: number = 100;
-var TEAM_B_PLAYERS: number = 100;
+var MAX_PLAYERS: number        = 200;
+var TEAM_A_PLAYERS: number     = 100;
+var TEAM_B_PLAYERS: number     = 100;
 
-var ELASTICITY_NORMAL: number = 1;
+var ELASTICITY_NORMAL: number  = 1;
 //var GRAVITY_CONSTANT: number = 0.0000000000667384;
-var GRAVITY_CONSTANT: number = 0.06;
-var MASS_PLAYER: number = 0.01;
-var MAX_WIDTH: number = 800;
-var MAX_HEIGHT: number = 800;
-var INDENT: number = 100;
+var GRAVITY_CONSTANT: number   = 0.06;
+var MASS_PLAYER: number        = 0.01;
+var MAX_WIDTH: number          = 800;
+var MAX_HEIGHT: number         = 800;
+var INDENT: number             = 100;
 
 
 // Global Arrays
-var gEntities: Player[] = [];
+var gPlayers: Player[] = [];
 var gBombs: Bomb[] = [];
 var gCollisions: Collision[] = [];
 
 // Global objects
-var g_pointer: Pointer;
-var g_playArea: PlayArea;
+var gPointer: Pointer;
+var gPlayArea: PlayArea;
 var gStats: Stats;
 var gInfoWindow: InfoWindow;
-var gSelectedPlayerID: number = -1;
+var gSelectedPlayerIDs: number[] = [];
 
 // Flags
 var gPause: boolean = false;
@@ -60,11 +61,11 @@ var gReset: boolean = false;
 
 // Set up pointer
 var pointerPos: Vector2D = new Vector2D({ x: 0, y: 0 });
-g_pointer = new Pointer({ id: 0, pos: pointerPos, mode: 'select'});
+gPointer = new Pointer({ id: 0, pos: pointerPos, mode: 'select'});
 
 // Set up playing area canvas
 var playAreaPos: Vector2D = new Vector2D({ x: 0, y: 0 });
-g_playArea = new PlayArea({ pos: playAreaPos, width: 800, height: 800, containerID: 'playAreaCanvas' });
+gPlayArea = new PlayArea({ pos: playAreaPos, width: 800, height: 800, containerID: 'playAreaCanvas' });
 
 // Initialize
 init();
@@ -73,7 +74,7 @@ function init() {
   // Set up stats
   var d = new Date();
   gStats = new Stats({ startTime: d.getTime() });
-  gEntities = [];
+  gPlayers = [];
 
   var posList: Vector2D[] = createNonCollidingVectors(MAX_PLAYERS, INDENT, MAX_WIDTH - INDENT, ((DETECT_RADIUS * 2) + 32));
   //var destList: Vector2D[] = createNonCollidingVectors(MAX_PLAYERS, INDENT, MAX_WIDTH - INDENT, ((DETECT_RADIUS * 2) + 32));
@@ -110,35 +111,35 @@ function init() {
     //player.destination = { x: (i < (MAX_PLAYERS / 2) ? ((i*64) + 100) : ((i-(MAX_PLAYERS/2))*64)+100), y: ((i < MAX_PLAYERS/2) ? 200 : 600) };
     player.isMoving = true;
     gStats.playersMoving++;
-    gEntities.push(player);
+    gPlayers.push(player);
   }
   
   /*
-  gEntities[0].pos = { x: 200, y: 400 };
-  gEntities[0].pointAt({ x: 600, y: 400 });
-  gEntities[0].moveForward();
-  gEntities[0].destination = { x: 600, y: 400 };
+  gPlayers[0].pos = { x: 200, y: 400 };
+  gPlayers[0].pointAt({ x: 600, y: 400 });
+  gPlayers[0].moveForward();
+  gPlayers[0].destination = { x: 600, y: 400 };
 
-  gEntities[1].pos = { x: 600, y: 400 };
-  gEntities[1].pointAt({ x: 200, y: 400 });
-  gEntities[1].moveForward();
-  gEntities[1].destination = { x: 200, y: 400 };
+  gPlayers[1].pos = { x: 600, y: 400 };
+  gPlayers[1].pointAt({ x: 200, y: 400 });
+  gPlayers[1].moveForward();
+  gPlayers[1].destination = { x: 200, y: 400 };
 
-  gEntities[2].pos = { x: 400, y: 200 };
-  gEntities[2].pointAt({ x: 400, y: 600 });
-  gEntities[2].moveForward();
-  gEntities[2].destination = { x: 400, y: 600 };
+  gPlayers[2].pos = { x: 400, y: 200 };
+  gPlayers[2].pointAt({ x: 400, y: 600 });
+  gPlayers[2].moveForward();
+  gPlayers[2].destination = { x: 400, y: 600 };
   
 
-  gEntities[3].pos = { x: 400, y: 600 };
-  gEntities[3].pointAt({ x: 400, y: 200 });
-  gEntities[3].moveForward();
-  gEntities[3].destination = { x: 400, y: 200 };
+  gPlayers[3].pos = { x: 400, y: 600 };
+  gPlayers[3].pointAt({ x: 400, y: 200 });
+  gPlayers[3].moveForward();
+  gPlayers[3].destination = { x: 400, y: 200 };
 
-  gEntities[4].pos = { x: 600, y: 600 };
-  gEntities[4].pointAt({ x: 400, y: 200 });
-  gEntities[4].moveForward();
-  gEntities[4].destination = { x: 600, y: 600 };
+  gPlayers[4].pos = { x: 600, y: 600 };
+  gPlayers[4].pointAt({ x: 400, y: 200 });
+  gPlayers[4].moveForward();
+  gPlayers[4].destination = { x: 600, y: 600 };
   */
 
 
