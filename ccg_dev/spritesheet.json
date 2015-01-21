@@ -1,20 +1,29 @@
 {"frames": [
 
 {
-	"filename": "man_green.png",
-	"frame": {"x":2,"y":2,"w":14,"h":10},
+	"filename": "man_blue_0.png",
+	"frame": {"x":34,"y":2,"w":14,"h":6},
 	"rotated": false,
 	"trimmed": true,
-	"spriteSourceSize": {"x":1,"y":1,"w":14,"h":10},
+	"spriteSourceSize": {"x":1,"y":5,"w":14,"h":6},
 	"sourceSize": {"w":16,"h":16},
 	"pivot": {"x":0.5,"y":0.5}
 },
 {
-	"filename": "man_red.png",
-	"frame": {"x":18,"y":2,"w":14,"h":10},
+	"filename": "man_blue_1.png",
+	"frame": {"x":2,"y":2,"w":14,"h":11},
 	"rotated": false,
 	"trimmed": true,
-	"spriteSourceSize": {"x":1,"y":1,"w":14,"h":10},
+	"spriteSourceSize": {"x":1,"y":2,"w":14,"h":11},
+	"sourceSize": {"w":16,"h":16},
+	"pivot": {"x":0.5,"y":0.5}
+},
+{
+	"filename": "man_blue_2.png",
+	"frame": {"x":18,"y":2,"w":14,"h":11},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":1,"y":2,"w":14,"h":11},
 	"sourceSize": {"w":16,"h":16},
 	"pivot": {"x":0.5,"y":0.5}
 }],
@@ -23,8 +32,8 @@
 	"version": "1.0",
 	"image": "spritesheet.png",
 	"format": "RGBA8888",
-	"size": {"w":34,"h":14},
+	"size": {"w":50,"h":15},
 	"scale": "1",
-	"smartupdate": "$TexturePacker:SmartUpdate:ab5b50229be59010c6271a1736ea654e:b44a87e46367034ef297dd2defc6d889:729adc6043343cfda41c447ce8f464d6$"
+	"smartupdate": "$TexturePacker:SmartUpdate:fc33cd7112e44346d2524b0d6432b19b:f0e13d988c2d7700adcf45c46bedb2d4:729adc6043343cfda41c447ce8f464d6$"
 }
 }

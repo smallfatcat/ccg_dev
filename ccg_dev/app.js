@@ -53,6 +53,10 @@ var textures = [];
 var stage;
 var renderer;
 var gfxObject;
+var loader;
+
+var gPlayerAnimationSequence = [0, 1, 0, 2];
+var gPlayerAnimationIndex = 0;
 
 // Flags
 var gPause = false;

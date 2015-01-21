@@ -2,6 +2,18 @@
 
 function renderPlayAreaPixi() {
   if (!gPlayAreaCanvasCreated) {
+    // create an array of assets to load
+    var assetsToLoader = ["spritesheet.json"];
+
+    // create a new loader
+    loader = new PIXI.AssetLoader(assetsToLoader);
+
+    // use callback
+    loader.onComplete = onAssetsLoaded
+
+	  //begin load
+	  loader.load();
+    
     // create an new instance of a pixi stage
     stage = new PIXI.Stage(0xFFFFFF);
 
@@ -25,21 +37,21 @@ function renderPlayAreaPixi() {
     // create a texture from an image path
     textures[0] = PIXI.Texture.fromImage("man_red.png");
     textures[1] = PIXI.Texture.fromImage("man_green.png");
+    textures[2] = PIXI.Texture.fromImage("level_1.png");
+
+    var levelSprite = new PIXI.Sprite(textures[2]);
+    // center the sprites anchor point
+    levelSprite.anchor.x = 0.5;
+    levelSprite.anchor.y = 0.5;
+
+    // move the sprite t the center of the screen
+    levelSprite.position.x = 400;
+    levelSprite.position.y = 400;
+    stage.addChild(levelSprite);
 
     gfxObject = new PIXI.Graphics();
     stage.addChild(gfxObject);
 
-    // create an array of assets to load
-    var assetsToLoader = ["SpriteSheet.json"];
-
-    // create a new loader
-    var loader = new PIXI.AssetLoader(assetsToLoader);
-
-    // use callback
-    loader.onComplete = onAssetsLoaded
-
-	  //begin load
-	  loader.load();
     /*
     var container = new PIXI.SpriteBatch();
     stage.addChild(container);
@@ -74,7 +86,7 @@ function renderPlayAreaPixi() {
 
   updateInfoWindow();
 
- 
+  requestAnimFrame(animate);
 
 
 }
@@ -82,26 +94,40 @@ function renderPlayAreaPixi() {
 function animate() {
   gfxObject.clear();
   //requestAnimationFrame(animate);
-  for (var i = 0; i < MAX_PLAYERS; i++) {
-    gSprites[i].position.x = gPlayers[i].pos.x;
-    gSprites[i].position.y = gPlayers[i].pos.y;
-    gSprites[i].rotation = degToRad(gPlayers[i].rotDegrees);
-    gfxObject.lineStyle(2, 0x000000, 1);
-    if (gPlayers[i].isMoving) {
-      gfxObject.drawCircle(gPlayers[i].destination.x, gPlayers[i].destination.y, gPlayers[i].collisionRadius);
-    }
-    if (gPlayers[i].isSelected) {
-      gfxObject.drawRect(gPlayers[i].pos.x - gPlayers[i].collisionRadius - 2, gPlayers[i].pos.y - gPlayers[i].collisionRadius - 2, (gPlayers[i].collisionRadius * 2) + 4, (gPlayers[i].collisionRadius * 2) + 4);
-    }
-    /*
-    gfxObject.lineStyle(2, 0x000044, 0.2);
-    for (var j = 1; j < gPlayers[i].history.length; j++) {
-      if (j == 1) {
-        gfxObject.moveTo(gPlayers[i].history[0].x, gPlayers[i].history[0].y);
+  var nextFrameID = nextFrame();
+  if (gSprites.length > 0) {
+    for (var i = 0; i < MAX_PLAYERS; i++) {
+      gSprites[i].position.x = gPlayers[i].pos.x;
+      gSprites[i].position.y = gPlayers[i].pos.y;
+      var angleToDest = gPlayers[i].pos.getAngleTo(gPlayers[i].destination) + (Math.PI / 2);
+      gSprites[i].rotation = angleToDest;
+      gfxObject.lineStyle(2, 0x000000, 1);
+      if (!gPause) {
+        if (gPlayers[i].isMoving) {
+          gSprites[i].gotoAndStop(nextFrameID);
+          gfxObject.drawCircle(gPlayers[i].destination.x, gPlayers[i].destination.y, gPlayers[i].collisionRadius);
+        }
+        else {
+          gSprites[i].gotoAndStop(0);
+        }
       }
-      gfxObject.lineTo(gPlayers[i].history[j].x, gPlayers[i].history[j].y);
+      else {
+        gSprites[i].stop();
+      }
+
+      if (gPlayers[i].isSelected) {
+        gfxObject.drawRect(gPlayers[i].pos.x - gPlayers[i].collisionRadius - 2, gPlayers[i].pos.y - gPlayers[i].collisionRadius - 2, (gPlayers[i].collisionRadius * 2) + 4, (gPlayers[i].collisionRadius * 2) + 4);
+      }
+      /*
+      gfxObject.lineStyle(2, 0x000044, 0.2);
+      for (var j = 1; j < gPlayers[i].history.length; j++) {
+        if (j == 1) {
+          gfxObject.moveTo(gPlayers[i].history[0].x, gPlayers[i].history[0].y);
+        }
+        gfxObject.lineTo(gPlayers[i].history[j].x, gPlayers[i].history[j].y);
+      }
+      */
     }
-    */
   }
   // Draw selection box
   if (gPointer.mode == 'drag') {
@@ -117,7 +143,7 @@ function onAssetsLoaded() {
   var animationTextures = [];
 
   for (var i = 0; i < 3; i++) {
-    var texture = PIXI.Texture.fromFrame("man_blue_" + (i) + ".png");
+    var texture = PIXI.Texture.fromFrame(String(i));
     animationTextures.push(texture);
   };
 
@@ -133,10 +159,12 @@ function onAssetsLoaded() {
     playerAnimation.anchor.x = 0.5;
     playerAnimation.anchor.y = 0.5;
 
-    playerAnimation.rotation = degToRad(gPlayers[i].rotDegrees);
-    //playerAnimation.scale.x = playerAnimation.scale.y = 0.75 + Math.random() * 0.5
+    var angleToDest = gPlayers[i].pos.getAngleTo(gPlayers[i].destination);
 
-    playerAnimation.gotoAndPlay(0);
+    playerAnimation.rotation = angleToDest;
+    //playerAnimation.scale.x = playerAnimation.scale.y = 0.75 + Math.random() * 0.5
+    playerAnimation.animationSpeed = 0.1;
+    playerAnimation.gotoAndStop(0);
 
     stage.addChild(playerAnimation);
     gSprites.push(playerAnimation);
@@ -285,4 +313,15 @@ function drawImage(ctx, x: number, y: number, a: number, width: number, imgID: s
   //ctx.fillRect(-50, -50, 100, 100);
   ctx.drawImage(image, width / -2, width / -2);
   ctx.setTransform(1, 0, 0, 1, 0, 0);
+}
+
+function nextFrame() {
+
+  if(gStats.frameCounter%10 == 0) {
+    gPlayerAnimationIndex++;
+    if (gPlayerAnimationIndex > 4) {
+      gPlayerAnimationIndex = 0;
+    }
+  }
+  return gPlayerAnimationSequence[gPlayerAnimationIndex];
 }

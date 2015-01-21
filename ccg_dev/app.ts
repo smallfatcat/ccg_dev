@@ -53,11 +53,15 @@ var gStats: Stats;
 var gInfoWindow: InfoWindow;
 var gSelectedPlayerIDs: number[] = [];
 
-var gSprites: PIXI.Sprite[] = [];
+var gSprites: PIXI.MovieClip[] = [];
 var textures: PIXI.Texture[] = [];
 var stage: PIXI.Stage;
 var renderer: PIXI.IPixiRenderer;
 var gfxObject: PIXI.Graphics;
+var loader: PIXI.AssetLoader;
+
+var gPlayerAnimationSequence: number[] = [0, 1, 0, 2];
+var gPlayerAnimationIndex: number = 0;
 
 // Flags
 var gPause: boolean = false;
