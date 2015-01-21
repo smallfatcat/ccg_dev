@@ -52,4 +52,9 @@ function getVectorAB(A, B) {
     var AB = new Vector2D({ x: B.x - A.x, y: B.y - A.y });
     return AB;
 }
+
+function degToRad(d) {
+    var r = (d / 360) * Math.PI * 2;
+    return r;
+}
 //# sourceMappingURL=util.js.map

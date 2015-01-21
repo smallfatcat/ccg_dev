@@ -1,4 +1,5 @@
-﻿// Main program
+﻿
+// Main program
 
 // Crowd Control Game
 // Authored by David Imrie
@@ -6,6 +7,7 @@
 
 // Reference files
 
+/// <reference path="scripts/typings/pixi/pixi.d.ts" />
 /// <reference path="classes.ts" />
 /// <reference path="player_class.ts" />
 /// <reference path="render.ts" />
@@ -24,7 +26,7 @@ var PHYSICS_MAXSPEED: number   = 100;
 var PHYSICS_MAXACC: number     = 2000;
 var PHYSICS_MINDIST: number    = 2;
 var MAX_TURN: number           = 5;
-var DETECT_RADIUS: number      = 8;
+var DETECT_RADIUS: number      = 4;
 
 var MAX_PLAYERS: number        = 200;
 var TEAM_A_PLAYERS: number     = 100;
@@ -50,6 +52,12 @@ var gPlayArea: PlayArea;
 var gStats: Stats;
 var gInfoWindow: InfoWindow;
 var gSelectedPlayerIDs: number[] = [];
+
+var gSprites: PIXI.Sprite[] = [];
+var textures: PIXI.Texture[] = [];
+var stage: PIXI.Stage;
+var renderer: PIXI.IPixiRenderer;
+var gfxObject: PIXI.Graphics;
 
 // Flags
 var gPause: boolean = false;
@@ -158,7 +166,7 @@ window.onload = () => {
 
   // Render scene
   //render();
-  renderPlayArea();
+  renderPlayAreaPixi();
   // Start physics processing
   setTimeout(physics, PHYSICS_TICK);
 };

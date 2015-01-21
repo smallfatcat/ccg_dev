@@ -52,3 +52,8 @@ function getVectorAB(A: Vector2D, B: Vector2D) {
   var AB: Vector2D = new Vector2D({ x: B.x - A.x, y: B.y - A.y });
   return AB;
 }
+
+function degToRad(d: number) {
+  var r: number = (d / 360) * Math.PI * 2; 
+  return r;
+}

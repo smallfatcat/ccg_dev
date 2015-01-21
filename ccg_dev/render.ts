@@ -1,5 +1,91 @@
 ﻿// Rendering Functions
 
+function renderPlayAreaPixi() {
+  if (!gPlayAreaCanvasCreated) {
+    // create an new instance of a pixi stage
+    stage = new PIXI.Stage(0xDDDDDD);
+
+    // create a renderer instance.
+    renderer = PIXI.autoDetectRenderer(800, 800);
+
+    // add the renderer view element to the DOM
+
+    $('#content').empty();
+    $('#content').append(renderer.view);
+
+    
+    var html: string = '';
+    var infoWindowPos: Vector2D = new Vector2D({ x: 800, y: 0 });
+    gInfoWindow = new InfoWindow({ pos: infoWindowPos, visible: true });
+    html += '<div id="infowindow" class="infowindow" style="left: ' + gInfoWindow.pos.x + 'px; top: ' + gInfoWindow.pos.y + 'px;"><div id="IWmain"></div><div id="IWsub"></div></div > ';
+    // write scene to html
+    $('#content').append(html);
+    gPlayAreaCanvasCreated = true;
+
+    // create a texture from an image path
+    textures[0] = PIXI.Texture.fromImage("man_red.png");
+    textures[1] = PIXI.Texture.fromImage("man_green.png");
+
+    for (var i = 0; i < MAX_PLAYERS; i++) {
+      // create a new Sprite using the texture
+      var sprite = new PIXI.Sprite(textures[gPlayers[i].team]);
+
+      // center the sprites anchor point
+      sprite.anchor.x = 0.5;
+      sprite.anchor.y = 0.5;
+
+      // move the sprite t the center of the screen
+      sprite.position.x = gPlayers[i].pos.x;
+      sprite.position.y = gPlayers[i].pos.y;
+
+      stage.addChild(sprite);
+      gSprites.push(sprite);
+    }
+    gfxObject = new PIXI.Graphics();
+    stage.addChild(gfxObject);
+  }
+
+  // Show or hide infoWindow
+  if (gInfoWindow.visible && !gInfoWindow.currentVisibility) {
+    $('#infowindow').show();
+    gInfoWindow.currentVisibility = true;
+  }
+  if (!gInfoWindow.visible && gInfoWindow.currentVisibility) {
+    $('#infowindow').hide();
+    gInfoWindow.currentVisibility = false;
+  }
+
+  updateInfoWindow();
+
+  requestAnimationFrame(animate);
+
+
+}
+
+function animate() {
+  gfxObject.clear();
+  //requestAnimationFrame(animate);
+  for (var i = 0; i < MAX_PLAYERS; i++) {
+    gSprites[i].position.x = gPlayers[i].pos.x;
+    gSprites[i].position.y = gPlayers[i].pos.y;
+    gSprites[i].rotation = degToRad(gPlayers[i].rotDegrees);
+    gfxObject.lineStyle(1, 0, 1);
+    if (gPlayers[i].isMoving) {
+      gfxObject.drawCircle(gPlayers[i].destination.x, gPlayers[i].destination.y, gPlayers[i].collisionRadius);
+    }
+    if (gPlayers[i].isSelected) {
+      gfxObject.drawRect(gPlayers[i].pos.x - gPlayers[i].collisionRadius - 2, gPlayers[i].pos.y - gPlayers[i].collisionRadius - 2, (gPlayers[i].collisionRadius * 2) + 4, (gPlayers[i].collisionRadius * 2) + 4);
+    }
+  }
+  // Draw selection box
+  if (gPointer.mode == 'drag') {
+    gfxObject.drawRect(gPointer.startDrag.x, gPointer.startDrag.y, gPointer.endDrag.x - gPointer.startDrag.x, gPointer.endDrag.y - gPointer.startDrag.y);
+  }
+
+  // render the stage   
+  renderer.render(stage);
+}
+
 function renderPlayArea() {
   // If this is the first time, create the canvas and write it to the page
   if (!gPlayAreaCanvasCreated) {
@@ -7,7 +93,7 @@ function renderPlayArea() {
     var html: string = gPlayArea.generateHtml();
     var infoWindowPos: Vector2D = new Vector2D({ x: 800, y: 0 });
     gInfoWindow = new InfoWindow({ pos: infoWindowPos, visible: true});
-    html += '<div id="infowindow" class="infowindow" style="left: ' + gInfoWindow.pos.x + 'px; top: ' + gInfoWindow.pos.y +'px;">Test</div>';
+    html += '<div id="infowindow" class="infowindow" style="left: ' + gInfoWindow.pos.x + 'px; top: ' + gInfoWindow.pos.y + 'px;"><div id="IWmain"></div><div id="IWsub"></div></div > ';
     // write scene to html
     $('#content').append(html);
     gPlayAreaCanvasCreated = true;
@@ -36,9 +122,9 @@ function renderPlayArea() {
   // Each Alive entity
   for (var i = 0; i < MAX_PLAYERS; i++) {
     if (gPlayers[i].isAlive) {
-      drawFilledCircle(ctx, gPlayers[i].pos.x, gPlayers[i].pos.y, gPlayers[i].collisionRadius, gPlayers[i].team == 0 ? 'red' : 'blue');
-      drawCircle(ctx, gPlayers[i].destination.x, gPlayers[i].destination.y, gPlayers[i].collisionRadius);
-      //drawImage(ctx, gPlayers[i].pos.x, gPlayers[i].pos.y, gPlayers[i].rotDegrees, 32, 'policeimg');
+      //drawFilledCircle(ctx, gPlayers[i].pos.x, gPlayers[i].pos.y, gPlayers[i].collisionRadius, gPlayers[i].team == 0 ? 'red' : 'blue');
+      //drawCircle(ctx, gPlayers[i].destination.x, gPlayers[i].destination.y, gPlayers[i].collisionRadius);
+      drawImage(ctx, gPlayers[i].pos.x, gPlayers[i].pos.y, gPlayers[i].rotDegrees, 16, gPlayers[i].team == 0 ? 'man_red':'man_green');
       if (gPlayers[i].isFighting) {
         drawFilledRectangle(ctx, gPlayers[i].pos.x - 12, gPlayers[i].pos.y - 24, (24 / 100) * gPlayers[i].health, 4, 'yellow');
       }
@@ -78,16 +164,19 @@ function updateInfoWindow() {
   html += '<br>playersAlive: ' + gStats.playersAlive;
   //html += '<br>bombsUsed: ' + gStats.bombsUsed;
   html += '<br>playersMoving: ' + gStats.playersMoving;
+  html += '<br>playersSelected: ' + gSelectedPlayerIDs.length;
   if (gPause) {
     html += '<br><br>GAME PAUSED';
   }
   if (gReset) {
     html += '<br><br>Reset in ' + gStats.resetCountdown + (gStats.resetCountdown == 1 ? ' second':' seconds');
   }
-  html += '<br><input type="button" id="resetBut" value="Start"></input>';
+  var htmlSub: string = '<input type="button" id="resetBut" value="Reset"></input>';
 
-  $('#infowindow').empty();
-  $('#infowindow').append(html);
+  $('#IWmain').empty();
+  $('#IWmain').append(html);
+  $('#IWsub').empty();
+  $('#IWsub').append(htmlSub);
   $('#resetBut').mousedown(function () {
     init();
   });

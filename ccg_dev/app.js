@@ -3,6 +3,7 @@
 // Authored by David Imrie
 // January 2015
 // Reference files
+/// <reference path="scripts/typings/pixi/pixi.d.ts" />
 /// <reference path="classes.ts" />
 /// <reference path="player_class.ts" />
 /// <reference path="render.ts" />
@@ -20,7 +21,7 @@ var PHYSICS_MAXSPEED = 100;
 var PHYSICS_MAXACC = 2000;
 var PHYSICS_MINDIST = 2;
 var MAX_TURN = 5;
-var DETECT_RADIUS = 8;
+var DETECT_RADIUS = 4;
 
 var MAX_PLAYERS = 200;
 var TEAM_A_PLAYERS = 100;
@@ -46,6 +47,12 @@ var gPlayArea;
 var gStats;
 var gInfoWindow;
 var gSelectedPlayerIDs = [];
+
+var gSprites = [];
+var textures = [];
+var stage;
+var renderer;
+var gfxObject;
 
 // Flags
 var gPause = false;
@@ -156,7 +163,7 @@ window.onload = function () {
 
     // Render scene
     //render();
-    renderPlayArea();
+    renderPlayAreaPixi();
 
     // Start physics processing
     setTimeout(physics, PHYSICS_TICK);

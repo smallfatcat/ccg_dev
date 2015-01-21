@@ -25,7 +25,7 @@ function physics() {
 
   // Render Scene
   //render();
-  renderPlayArea();
+  renderPlayAreaPixi();
 
   // Modify Stats
   updateStats();

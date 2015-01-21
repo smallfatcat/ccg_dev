@@ -24,14 +24,33 @@ function mouseDown(event) {
     }
 
     if (gPointer.mode == 'makedest') {
+        console.log('makedestbox');
         gPlayers[gSelectedPlayerIDs[0]].destination = PointerPos;
         gPlayers[gSelectedPlayerIDs[0]].isSelected = false;
         gPlayers[gSelectedPlayerIDs[0]].moveTowards(gPlayers[gSelectedPlayerIDs[0]].destination);
         gPlayers[gSelectedPlayerIDs[0]].isMoving = true;
         gStats.playersMoving++;
-        gSelectedPlayerIDs.pop();
+        gSelectedPlayerIDs = [];
         gPointer.mode = 'select';
         return;
+    }
+
+    if (gPointer.mode == 'makedestbox') {
+        console.log('makedestbox');
+        var n = gSelectedPlayerIDs.length;
+        if (n > 0) {
+            var rows = Math.ceil(Math.sqrt(n));
+            var destGrid = createGrid(gPointer.pos.x, gPointer.pos.y, n, 16, rows);
+            for (var i = 0; i < gSelectedPlayerIDs.length; i++) {
+                gPlayers[gSelectedPlayerIDs[i]].destination = destGrid[i];
+                gPlayers[gSelectedPlayerIDs[i]].isSelected = false;
+                gPlayers[gSelectedPlayerIDs[i]].moveTowards(gPlayers[gSelectedPlayerIDs[i]].destination);
+                gPlayers[gSelectedPlayerIDs[i]].isMoving = true;
+                gStats.playersMoving++;
+            }
+            gSelectedPlayerIDs = [];
+        }
+        gPointer.mode = 'select';
     }
     /*
     var bomb = new Bomb({ id: gBombs.length, pos: { x: event.pageX, y: event.pageY }, maxRadius: 150, minRadius: 1, maxLifeTime: 1, damage: 1 })
@@ -43,11 +62,18 @@ function mouseDown(event) {
 function onMouseMove(event) {
     gPointer.endDrag.x = event.pageX;
     gPointer.endDrag.y = event.pageY;
+    deselectPlayers();
+    selectPlayersInBox();
 }
 
 function onMouseUp(event) {
+    deselectPlayers();
     selectPlayersInBox();
-    gPointer.mode = 'select';
+    if (gSelectedPlayerIDs.length > 0) {
+        gPointer.mode = 'makedestbox';
+    } else {
+        gPointer.mode = 'select';
+    }
     document.body.removeEventListener('mousemove', onMouseMove);
     document.body.removeEventListener('mouseup', onMouseUp);
 }
@@ -122,13 +148,19 @@ function selectPlayersInBox() {
         if (checkPlayerInBox(gPlayers[i], gPointer.startDrag, gPointer.endDrag)) {
             gPlayers[i].isSelected = true;
             gSelectedPlayerIDs.push(gPlayers[i].id);
+        } else {
+            gPlayers[i].isSelected = false;
         }
     }
 }
 
 function checkPlayerInBox(player, startBox, endBox) {
     var inBox = false;
-    if (player.pos.x - player.collisionRadius > startBox.x && player.pos.x + player.collisionRadius < endBox.x && player.pos.y - player.collisionRadius > startBox.y && player.pos.y + player.collisionRadius < endBox.y) {
+    var minX = Math.min(startBox.x, endBox.x);
+    var maxX = Math.max(startBox.x, endBox.x);
+    var minY = Math.min(startBox.y, endBox.y);
+    var maxY = Math.max(startBox.y, endBox.y);
+    if (player.pos.x - player.collisionRadius > minX && player.pos.x + player.collisionRadius < maxX && player.pos.y - player.collisionRadius > minY && player.pos.y + player.collisionRadius < maxY) {
         inBox = true;
     }
     return inBox;

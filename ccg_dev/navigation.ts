@@ -8,7 +8,9 @@
   else {
     // Reorient algorithm
     player.speed = PHYSICS_MAXSPEED;
-    player.vel = reorient(player.vel, getVectorAB(player.pos, player.destination), player.id);
+    var originalV: Vector2D = new Vector2D({ x: player.vel.x, y: player.vel.y });
+    var newV: Vector2D = new Vector2D({ x: 0, y: 0});
+    newV = reorient(originalV, getVectorAB(player.pos, player.destination), player.id);
 
     // Avoidance algorithm
     var closestPlayerID: number = selectOtherPlayer(player.pos.x, player.pos.y, player.id);
@@ -20,9 +22,10 @@
         var brakingForce = calcBrakingForce(closesetDistance - player.collisionRadius - closestPlayer.collisionRadius);
         player.speed = PHYSICS_MAXSPEED * (1 - brakingForce);
         //console.log(player.id + ' Avoiding: ' + closestPlayer.id);
-        player.vel = avoid(player.vel, getVectorAB(player.pos, closestPlayer.pos));
+        newV = avoid(newV, getVectorAB(player.pos, closestPlayer.pos));
       }
     }
+    player.vel = newV;
     // Calculate slowdown for nearing destination
     var destBrakingForce = calcBrakingForce(destinationDistance);
     player.speed = Math.min(PHYSICS_MAXSPEED * (1 - destBrakingForce), player.speed);
@@ -112,7 +115,7 @@ function calcBrakingForce(d: number) {
   var brakingForce = A * Math.exp(d / -10) - B;
   brakingForce *= normalFactor;
   brakingForce = Math.min(brakingForce, 0.8);
-  brakingForce *= 0.5; 
+  brakingForce *= 1; 
   return brakingForce;
 }
 
