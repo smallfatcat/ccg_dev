@@ -42,7 +42,7 @@ function mouseDown(event) {
     var n: number = gSelectedPlayerIDs.length;
     if(n>0){
       var rows: number = Math.ceil(Math.sqrt(n));
-      var destGrid: Vector2D[] = createGrid(gPointer.pos.x, gPointer.pos.y, n, 16, rows);
+      var destGrid: Vector2D[] = createGrid(gPointer.pos.x, gPointer.pos.y, n, 32, rows);
       for (var i = 0; i < gSelectedPlayerIDs.length; i++) {
         gPlayers[gSelectedPlayerIDs[i]].destination = destGrid[i];
         gPlayers[gSelectedPlayerIDs[i]].isSelected = false;

@@ -14,6 +14,7 @@
   destination: Vector2D;
   isMoving: boolean;
   isSelected: boolean;
+  history: Vector2D[];
   constructor(properties: PlayerProps) {
     super(properties);
     this.distances = [];
@@ -32,6 +33,7 @@
     this.destination = new Vector2D({ x: 0, y: 0 });
     this.isMoving = false;
     this.isSelected = false;
+    this.history = [];
   }
 
   moveTowards(pos: Vector2D) {

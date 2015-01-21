@@ -344,7 +344,14 @@ declare module PIXI
         static fromFrame(frameId: string): Sprite;
         static fromImage(url: string): Sprite;
         setTexture(texture: Texture): void;
-    }
+  }
+
+  export class SpriteBatch extends DisplayObjectContainer
+  {
+    textureThing: Texture;
+    ready: boolean;
+    constructor(texture?: Texture);
+  }
 
     /* TODO determine type of frames */
     export class SpriteSheetLoader extends EventTarget

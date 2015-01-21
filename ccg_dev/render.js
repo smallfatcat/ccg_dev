@@ -2,7 +2,7 @@
 function renderPlayAreaPixi() {
     if (!gPlayAreaCanvasCreated) {
         // create an new instance of a pixi stage
-        stage = new PIXI.Stage(0xDDDDDD);
+        stage = new PIXI.Stage(0xFFFFFF);
 
         // create a renderer instance.
         renderer = PIXI.autoDetectRenderer(800, 800);
@@ -24,23 +24,40 @@ function renderPlayAreaPixi() {
         textures[0] = PIXI.Texture.fromImage("man_red.png");
         textures[1] = PIXI.Texture.fromImage("man_green.png");
 
-        for (var i = 0; i < MAX_PLAYERS; i++) {
-            // create a new Sprite using the texture
-            var sprite = new PIXI.Sprite(textures[gPlayers[i].team]);
-
-            // center the sprites anchor point
-            sprite.anchor.x = 0.5;
-            sprite.anchor.y = 0.5;
-
-            // move the sprite t the center of the screen
-            sprite.position.x = gPlayers[i].pos.x;
-            sprite.position.y = gPlayers[i].pos.y;
-
-            stage.addChild(sprite);
-            gSprites.push(sprite);
-        }
         gfxObject = new PIXI.Graphics();
         stage.addChild(gfxObject);
+
+        // create an array of assets to load
+        var assetsToLoader = ["SpriteSheet.json"];
+
+        // create a new loader
+        var loader = new PIXI.AssetLoader(assetsToLoader);
+
+        // use callback
+        loader.onComplete = onAssetsLoaded;
+
+        //begin load
+        loader.load();
+        /*
+        var container = new PIXI.SpriteBatch();
+        stage.addChild(container);
+        
+        for (var i = 0; i < MAX_PLAYERS; i++) {
+        // create a new Sprite using the texture
+        var sprite = new PIXI.Sprite(textures[gPlayers[i].team]);
+        
+        // center the sprites anchor point
+        sprite.anchor.x = 0.5;
+        sprite.anchor.y = 0.5;
+        
+        // move the sprite t the center of the screen
+        sprite.position.x = gPlayers[i].pos.x;
+        sprite.position.y = gPlayers[i].pos.y;
+        
+        container.addChild(sprite);
+        gSprites.push(sprite);
+        }
+        */
     }
 
     // Show or hide infoWindow
@@ -54,8 +71,6 @@ function renderPlayAreaPixi() {
     }
 
     updateInfoWindow();
-
-    requestAnimationFrame(animate);
 }
 
 function animate() {
@@ -65,13 +80,22 @@ function animate() {
         gSprites[i].position.x = gPlayers[i].pos.x;
         gSprites[i].position.y = gPlayers[i].pos.y;
         gSprites[i].rotation = degToRad(gPlayers[i].rotDegrees);
-        gfxObject.lineStyle(1, 0, 1);
+        gfxObject.lineStyle(2, 0x000000, 1);
         if (gPlayers[i].isMoving) {
             gfxObject.drawCircle(gPlayers[i].destination.x, gPlayers[i].destination.y, gPlayers[i].collisionRadius);
         }
         if (gPlayers[i].isSelected) {
             gfxObject.drawRect(gPlayers[i].pos.x - gPlayers[i].collisionRadius - 2, gPlayers[i].pos.y - gPlayers[i].collisionRadius - 2, (gPlayers[i].collisionRadius * 2) + 4, (gPlayers[i].collisionRadius * 2) + 4);
         }
+        /*
+        gfxObject.lineStyle(2, 0x000044, 0.2);
+        for (var j = 1; j < gPlayers[i].history.length; j++) {
+        if (j == 1) {
+        gfxObject.moveTo(gPlayers[i].history[0].x, gPlayers[i].history[0].y);
+        }
+        gfxObject.lineTo(gPlayers[i].history[j].x, gPlayers[i].history[j].y);
+        }
+        */
     }
 
     // Draw selection box
@@ -81,6 +105,38 @@ function animate() {
 
     // render the stage
     renderer.render(stage);
+}
+
+function onAssetsLoaded() {
+    // create an array to store the textures
+    var animationTextures = [];
+
+    for (var i = 0; i < 3; i++) {
+        var texture = PIXI.Texture.fromFrame("man_blue_" + (i) + ".png");
+        animationTextures.push(texture);
+    }
+    ;
+
+    for (var i = 0; i < gPlayers.length; i++) {
+        // create a MovieClip
+        var playerAnimation = new PIXI.MovieClip(animationTextures);
+
+        playerAnimation.position.x = gPlayers[i].pos.x;
+        playerAnimation.position.y = gPlayers[i].pos.y;
+        playerAnimation.anchor.x = 0.5;
+        playerAnimation.anchor.y = 0.5;
+
+        playerAnimation.rotation = degToRad(gPlayers[i].rotDegrees);
+
+        //playerAnimation.scale.x = playerAnimation.scale.y = 0.75 + Math.random() * 0.5
+        playerAnimation.gotoAndPlay(0);
+
+        stage.addChild(playerAnimation);
+        gSprites.push(playerAnimation);
+    }
+
+    // start animating
+    requestAnimFrame(animate);
 }
 
 function renderPlayArea() {

@@ -14,7 +14,7 @@
 /// <reference path="legacy.ts" />
 /// <reference path="jquery.d.ts" />
 // Constants
-var PHYSICS_TICK = 15;
+var PHYSICS_TICK = 16;
 var PHYSICS_GRAVITY = 0;
 var PHYSICS_FRICTION = 1;
 var PHYSICS_MAXSPEED = 100;
@@ -83,8 +83,8 @@ function init() {
     //var destList: Vector2D[] = createNonCollidingVectors(MAX_PLAYERS, INDENT, MAX_WIDTH - INDENT, ((DETECT_RADIUS * 2) + 32));
     //var posList: Vector2D[] = createGrid(20, 400, 100, ((DETECT_RADIUS * 2) + 16), 5);
     //posList = posList.concat(createGrid(20, 100, 100, ((DETECT_RADIUS * 2) + 16), 5));
-    var destList = createGrid(20, 100, 100, 16, 5);
-    destList = destList.concat(createGrid(20, 400, 100, ((DETECT_RADIUS * 2) + 16), 5));
+    var destList = createGrid(50, 100, 100, ((DETECT_RADIUS * 2) + 16), 5);
+    destList = destList.concat(createGrid(50, 400, 100, ((DETECT_RADIUS * 2) + 16), 5));
 
     for (var i = 0; i < MAX_PLAYERS; i++) {
         var player = new Player({

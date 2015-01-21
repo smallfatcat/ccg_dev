@@ -94,5 +94,17 @@ function physicsPlayer(player) {
     if (player.isMoving) {
         navigatePlayer(player);
     }
+
+    if (player.history.length == 0) {
+        var historyPos = new Vector2D({ x: player.pos.x, y: player.pos.y });
+        player.history.push(historyPos);
+    }
+
+    if (gStats.frameCounter % (Math.round(1 / t / 10)) == 0) {
+        var historyPos = new Vector2D({ x: player.pos.x, y: player.pos.y });
+        if (player.pos.x != player.history[player.history.length - 1].x && player.pos.y != player.history[player.history.length - 1].y) {
+            player.history.push(historyPos);
+        }
+    }
 }
 //# sourceMappingURL=physics.js.map

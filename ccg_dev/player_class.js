@@ -24,6 +24,7 @@ var Player = (function (_super) {
         this.destination = new Vector2D({ x: 0, y: 0 });
         this.isMoving = false;
         this.isSelected = false;
+        this.history = [];
     }
     Player.prototype.moveTowards = function (pos) {
         var towardsVector = getVectorAB(this.pos, pos);
