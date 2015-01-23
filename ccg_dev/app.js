@@ -40,7 +40,9 @@ var INDENT = 100;
 var gPlayers = [];
 var gBombs = [];
 var gCollisions = [];
-var gRects = [];
+var gScenery = [];
+var gVG;
+var gEdges = [];
 
 // Global objects
 var gPointer;
@@ -85,12 +87,21 @@ function init() {
     var d = new Date();
     gStats = new Stats({ startTime: d.getTime() });
     gPlayers = [];
-    gRects = [];
+    gScenery = [];
+    gEdges = [];
 
-    var rect1 = new Rect({ x: 400, y: 400, width: 50, height: 50 });
-    var rect2 = new Rect({ x: 425, y: 425, width: 50, height: 50 });
-    gRects.push(rect1);
-    gRects.push(rect2);
+    var scenery1 = new Scenery({ rect: new Rect({ x: 400, y: 400, width: 50, height: 50 }) });
+    var scenery2 = new Scenery({ rect: new Rect({ x: 425, y: 425, width: 50, height: 50 }) });
+    var scenery3 = new Scenery({ rect: new Rect({ x: 500, y: 200, width: 100, height: 100 }) });
+    var scenery4 = new Scenery({ rect: new Rect({ x: 700, y: 125, width: 75, height: 100 }) });
+    gScenery.push(scenery1);
+    gScenery.push(scenery2);
+    gScenery.push(scenery3);
+    gScenery.push(scenery4);
+
+    // Build Visibility Graph
+    gEdges = buildEdges();
+    gVG = buildVG();
 
     var posList = createNonCollidingVectors(MAX_PLAYERS, INDENT, MAX_WIDTH - INDENT, ((DETECT_RADIUS * 2) + 32));
 

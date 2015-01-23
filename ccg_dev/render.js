@@ -154,8 +154,17 @@ function animate() {
     if (gPointer.mode == 'drag') {
         gfxObject.drawRect(gPointer.startDrag.x, gPointer.startDrag.y, gPointer.endDrag.x - gPointer.startDrag.x, gPointer.endDrag.y - gPointer.startDrag.y);
     }
-    for (var i = 0; i < gRects.length; i++) {
-        gfxObject.drawRect(gRects[i].x, gRects[i].y, gRects[i].width, gRects[i].height);
+    for (var i = 0; i < gScenery.length; i++) {
+        gfxObject.drawRect(gScenery[i].rect.x, gScenery[i].rect.y, gScenery[i].rect.width, gScenery[i].rect.height);
+    }
+    for (var i = 0; i < gVG.nodes.length; i++) {
+        gfxObject.lineStyle(2, 0x000000, 0.2);
+        gfxObject.drawCircle(gVG.nodes[i].pos.x, gVG.nodes[i].pos.y, 8);
+        gfxObject.lineStyle(1, 0xaa0000, 0.2);
+        for (var j = 0; j < gVG.nodes[i].visibleNodes.length; j++) {
+            gfxObject.moveTo(gVG.nodes[i].pos.x, gVG.nodes[i].pos.y);
+            gfxObject.lineTo(gVG.nodes[gVG.nodes[i].visibleNodes[j].id].pos.x, gVG.nodes[gVG.nodes[i].visibleNodes[j].id].pos.y);
+        }
     }
 
     // render the stage

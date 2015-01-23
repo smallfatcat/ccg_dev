@@ -296,6 +296,17 @@ class Rect extends Vector2D{
     this.width = properties.width;
     this.height = properties.height;
   }
+  convertToShape() {
+    var shape: Shape = new Shape({
+      vertices: [
+        new Vector2D({x: this.x, y: this.y}),
+        new Vector2D({x: this.x, y: this.y + this.height}),
+        new Vector2D({x: this.x + this.width, y: this.y + this.height}),
+        new Vector2D({x: this.x + this.width, y: this.y})
+      ]
+    });
+    return shape;
+  }
 }
 
 interface RectProps extends Vector2DProps {
@@ -308,6 +319,15 @@ class Shape {
   constructor(properties: ShapeProps) {
     this.vertices = properties.vertices;
 
+  }
+
+  getEdges() {
+    var edges: Edge[] = [];
+    for (var i = 0; i < this.vertices.length; i++) {
+      var edge: Edge = new Edge({ A1: this.vertices[i], A2: this.vertices[i + 1 == this.vertices.length ? 0 : i + 1]});
+      edges.push(edge);
+    }
+    return edges;
   }
 
   getAxes() {
@@ -344,6 +364,20 @@ class Shape {
     var proj: Projection = new Projection({min: min, max: max});
     return proj;
   }
+}
+
+class Edge {
+  A1: Vector2D;
+  A2: Vector2D;
+  constructor(properties: EdgeProps) {
+    this.A1 = properties.A1;
+    this.A2 = properties.A2;
+  }
+}
+
+interface EdgeProps {
+  A1: Vector2D;
+  A2: Vector2D;
 }
 
 interface ShapeProps {
@@ -388,7 +422,8 @@ class VisGraph {
     this.nodes = [];
   }
   addNode(node: VGnode) {
-    this.nodes.push(node);
+    var newNode: VGnode = new VGnode(node);
+    this.nodes.push(newNode);
   }
   removeNode(id: number) {
     // loop through all visible nodes
@@ -401,10 +436,12 @@ class VisGraph {
 
 class VGnode {
   id: number;
+  pos: Vector2D;
   visibleNodes: VGnodeEntry[];
   constructor(properties: VGnodeProps) {
     this.id = properties.id;
     this.visibleNodes = [];
+    this.pos = properties.pos;
   }
   addVisible(nodeEntry: VGnodeEntry) {
     this.visibleNodes.push(nodeEntry);
@@ -422,6 +459,7 @@ class VGnode {
 
 interface VGnodeProps {
   id: number;
+  pos: Vector2D;
 }
 
 class VGnodeEntry {
@@ -436,6 +474,32 @@ class VGnodeEntry {
 interface VGnodeEntryProps {
   id: number;
   distance: number;
+}
+
+class Scenery {
+  rect: Rect;
+  shape: Shape;
+  edges: Edge[];
+  nodes: Vector2D[];
+  constructor(properties: SceneryProps) {
+    this.rect = properties.rect;
+    this.shape = this.rect.convertToShape();
+    this.edges = this.shape.getEdges();
+    var c: number = 8;
+    var node0: Vector2D = new Vector2D({ x: this.shape.vertices[0].x - c, y: this.shape.vertices[0].y - c });
+    var node1: Vector2D = new Vector2D({ x: this.shape.vertices[1].x - c, y: this.shape.vertices[1].y + c });
+    var node2: Vector2D = new Vector2D({ x: this.shape.vertices[2].x + c, y: this.shape.vertices[2].y + c });
+    var node3: Vector2D = new Vector2D({ x: this.shape.vertices[3].x + c, y: this.shape.vertices[3].y - c });
+    this.nodes = [];
+    this.nodes.push(node0);
+    this.nodes.push(node1);
+    this.nodes.push(node2);
+    this.nodes.push(node3);
+  }
+}
+
+interface SceneryProps {
+  rect: Rect;
 }
 
 

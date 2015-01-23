@@ -35,8 +35,8 @@ function calcPlayerPhysics() {
         if (gPlayers[i].isAlive) {
             // Do physics for all test objects
             physicsPlayer(gPlayers[i]);
-            for (var j = 0; j < gRects.length; j++) {
-                if (rectCollide(gRects[j], getPlayerRect(gPlayers[i]))) {
+            for (var j = 0; j < gScenery.length; j++) {
+                if (rectCollide(gScenery[j].rect, getPlayerRect(gPlayers[i]))) {
                     //console.log('player collision: ' + i + ' x: ' + gPlayers[i].pos.x + ' y:' + gPlayers[i].pos.y );
                 }
             }

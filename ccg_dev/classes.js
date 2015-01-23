@@ -207,6 +207,17 @@ var Rect = (function (_super) {
         this.width = properties.width;
         this.height = properties.height;
     }
+    Rect.prototype.convertToShape = function () {
+        var shape = new Shape({
+            vertices: [
+                new Vector2D({ x: this.x, y: this.y }),
+                new Vector2D({ x: this.x, y: this.y + this.height }),
+                new Vector2D({ x: this.x + this.width, y: this.y + this.height }),
+                new Vector2D({ x: this.x + this.width, y: this.y })
+            ]
+        });
+        return shape;
+    };
     return Rect;
 })(Vector2D);
 
@@ -214,6 +225,15 @@ var Shape = (function () {
     function Shape(properties) {
         this.vertices = properties.vertices;
     }
+    Shape.prototype.getEdges = function () {
+        var edges = [];
+        for (var i = 0; i < this.vertices.length; i++) {
+            var edge = new Edge({ A1: this.vertices[i], A2: this.vertices[i + 1 == this.vertices.length ? 0 : i + 1] });
+            edges.push(edge);
+        }
+        return edges;
+    };
+
     Shape.prototype.getAxes = function () {
         var axes = [];
 
@@ -256,6 +276,14 @@ var Shape = (function () {
     return Shape;
 })();
 
+var Edge = (function () {
+    function Edge(properties) {
+        this.A1 = properties.A1;
+        this.A2 = properties.A2;
+    }
+    return Edge;
+})();
+
 var Projection = (function () {
     function Projection(properties) {
         this.min = properties.min;
@@ -276,7 +304,8 @@ var VisGraph = (function () {
         this.nodes = [];
     }
     VisGraph.prototype.addNode = function (node) {
-        this.nodes.push(node);
+        var newNode = new VGnode(node);
+        this.nodes.push(newNode);
     };
     VisGraph.prototype.removeNode = function (id) {
         for (var i = 0; i < this.nodes[id].visibleNodes.length; i++) {
@@ -291,6 +320,7 @@ var VGnode = (function () {
     function VGnode(properties) {
         this.id = properties.id;
         this.visibleNodes = [];
+        this.pos = properties.pos;
     }
     VGnode.prototype.addVisible = function (nodeEntry) {
         this.visibleNodes.push(nodeEntry);
@@ -313,5 +343,24 @@ var VGnodeEntry = (function () {
         this.distance = properties.distance;
     }
     return VGnodeEntry;
+})();
+
+var Scenery = (function () {
+    function Scenery(properties) {
+        this.rect = properties.rect;
+        this.shape = this.rect.convertToShape();
+        this.edges = this.shape.getEdges();
+        var c = 8;
+        var node0 = new Vector2D({ x: this.shape.vertices[0].x - c, y: this.shape.vertices[0].y - c });
+        var node1 = new Vector2D({ x: this.shape.vertices[1].x - c, y: this.shape.vertices[1].y + c });
+        var node2 = new Vector2D({ x: this.shape.vertices[2].x + c, y: this.shape.vertices[2].y + c });
+        var node3 = new Vector2D({ x: this.shape.vertices[3].x + c, y: this.shape.vertices[3].y - c });
+        this.nodes = [];
+        this.nodes.push(node0);
+        this.nodes.push(node1);
+        this.nodes.push(node2);
+        this.nodes.push(node3);
+    }
+    return Scenery;
 })();
 //# sourceMappingURL=classes.js.map

@@ -163,9 +163,65 @@ function LineCollision(A1: Vector2D, A2: Vector2D, B1: Vector2D, B2: Vector2D){
 
 function isVisible(A1: Vector2D, A2: Vector2D) {
   // check line collision for A1, A2 between B1, B2 from each edge
-    // if collision is on the end of the edge, allow it
-    // else
-    return false;
+  for (var i = 0; i < gEdges.length; i++) {
+    var result: LineCollisonResult = LineCollision(A1, A2, gEdges[i].A1, gEdges[i].A2);
+    // if collision 
+    if (result.isColliding) {
+      return false;
+    }
+  }
   // if we found no collisions
   return true;
+}
+
+function buildVG() {
+  var VG: VisGraph = new VisGraph();
+  for (var i = 0; i < gScenery.length; i++) {
+    for (var n = 0; n < gScenery[i].nodes.length; n++) {
+      var node: VGnode = new VGnode({
+        id: VG.nodes.length,
+        pos: gScenery[i].nodes[n]
+      });
+      VG.addNode(node);
+    }
+  }
+  
+
+  // for each node check all other nodes for visibility
+  for (var i = 0; i < VG.nodes.length; i++) {
+    var thisNode: VGnode = VG.nodes[i];
+    for (var j = i + 1; j < VG.nodes.length; j++) {
+      var otherNode: VGnode = VG.nodes[j];
+      // Check for visibility
+      if (isVisible(thisNode.pos, otherNode.pos)) {
+        var distance = getDistance(thisNode.pos, otherNode.pos)
+        var thisNodeEntry = new VGnodeEntry({
+          id: otherNode.id,
+          distance: distance
+        });
+        var otherNodeEntry = new VGnodeEntry({
+          id: thisNode.id,
+          distance: distance
+        });
+        thisNode.addVisible(thisNodeEntry);
+        otherNode.addVisible(otherNodeEntry);
+        console.log(thisNode.id + ' is visible from ' + otherNode.id + ' ax: ' + thisNode.pos.x + ' ay: ' + thisNode.pos.y + ' bx: ' + otherNode.pos.x + ' by: ' + otherNode.pos.y);
+      }
+      else {
+        console.log(thisNode.id + ' is not visible from ' + otherNode.id + ' ax: ' + thisNode.pos.x + ' ay: ' + thisNode.pos.y + ' bx: ' + otherNode.pos.x + ' by: ' + otherNode.pos.y);
+      }
+    }
+  }
+  return VG;
+}
+
+function buildEdges() {
+  var edges: Edge[] = [];
+  for (var i = 0; i < gScenery.length; i++) {
+    for (var e = 0; e < gScenery[i].edges.length; e++) {
+      var edge: Edge = gScenery[i].edges[e];
+      edges.push(edge);
+    }
+  }
+  return edges;
 }
