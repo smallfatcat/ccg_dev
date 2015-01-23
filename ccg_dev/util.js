@@ -82,11 +82,11 @@ function checkSATcollision(shape1, shape2) {
     var axes2 = shape2.getAxes();
 
     for (var i = 0; i < axes1.length; i++) {
-        var axis = axes1[i];
+        var axis = new Vector2D(axes1[i]);
 
         // project both shapes onto the axis
-        var p1 = shape1.project(axis);
-        var p2 = shape2.project(axis);
+        var p1 = new Projection(shape1.project(axis));
+        var p2 = new Projection(shape2.project(axis));
 
         // do the projections overlap?
         if (!p1.overlap(p2)) {
@@ -96,11 +96,11 @@ function checkSATcollision(shape1, shape2) {
     }
 
     for (var i = 0; i < axes2.length; i++) {
-        var axis = axes2[i];
+        var axis = new Vector2D(axes2[i]);
 
         // project both shapes onto the axis
-        var p1 = shape1.project(axis);
-        var p2 = shape2.project(axis);
+        var p1 = new Projection(shape1.project(axis));
+        var p2 = new Projection(shape2.project(axis));
 
         // do the projections overlap?
         if (!p1.overlap(p2)) {
@@ -113,4 +113,13 @@ function checkSATcollision(shape1, shape2) {
     // so we can guarantee an intersection
     return true;
 }
+/*
+var t1 = new Shape({
+vertices: [
+{ x: gRects[0].x, y: gRects[0].y},
+{ x: gRects[0].x + gRects[0].width, y: gRects[0].y},
+{ x: gRects[0].x + gRects[0].width, y: gRects[0].y + gRects[0].height},
+{ x: gRects[0].x, y:gRects[0].y + gRects[0].height }
+] });
+*/
 //# sourceMappingURL=util.js.map

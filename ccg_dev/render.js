@@ -154,7 +154,9 @@ function animate() {
     if (gPointer.mode == 'drag') {
         gfxObject.drawRect(gPointer.startDrag.x, gPointer.startDrag.y, gPointer.endDrag.x - gPointer.startDrag.x, gPointer.endDrag.y - gPointer.startDrag.y);
     }
-    gfxObject.drawRect(gRects[0].x, gRects[0].y, gRects[0].width, gRects[0].height);
+    for (var i = 0; i < gRects.length; i++) {
+        gfxObject.drawRect(gRects[i].x, gRects[i].y, gRects[i].width, gRects[i].height);
+    }
 
     // render the stage
     renderer.render(stage);

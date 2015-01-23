@@ -78,6 +78,23 @@ var Vector2D = (function () {
         var angleAB = angleToB - angleToA;
         return angleAB;
     };
+    Vector2D.prototype.subtract = function (B) {
+        var result = new Vector2D({ x: 0, y: 0 });
+        result.x = this.x - B.x;
+        result.y = this.y - B.y;
+        return result;
+    };
+    Vector2D.prototype.perp = function () {
+        // the perp method is just (x, y) => (-y, x) or (y, -x)
+        var result = new Vector2D({ x: 0, y: 0 });
+        result.x = -1 * this.y;
+        result.y = 1 * this.x;
+        return result;
+    };
+    Vector2D.prototype.dot = function (B) {
+        var n = (this.x * B.x) + (this.y * B.y);
+        return n;
+    };
     return Vector2D;
 })();
 
@@ -180,4 +197,65 @@ var Rect = (function (_super) {
     }
     return Rect;
 })(Vector2D);
+
+var Shape = (function () {
+    function Shape(properties) {
+        this.vertices = properties.vertices;
+    }
+    Shape.prototype.getAxes = function () {
+        var axes = [];
+
+        for (var i = 0; i < this.vertices.length; i++) {
+            console.log(this.vertices[i + 1 == this.vertices.length ? 0 : i + 1]);
+
+            // get the current vertex
+            var p1 = new Vector2D(this.vertices[i]);
+
+            // get the next vertex
+            var p2 = new Vector2D(this.vertices[i + 1 == this.vertices.length ? 0 : i + 1]);
+
+            // subtract the two to get the edge vector
+            var edge = new Vector2D(p1.subtract(p2));
+
+            // get either perpendicular vector
+            var normal = new Vector2D(edge.perp());
+
+            // the perp method is just (x, y) => (-y, x) or (y, -x)
+            axes.push(normal);
+        }
+        return axes;
+    };
+
+    Shape.prototype.project = function (axis) {
+        var min = axis.dot(this.vertices[0]);
+        var max = min;
+        for (var i = 1; i < this.vertices.length; i++) {
+            // NOTE: the axis must be normalized to get accurate projections
+            var p = axis.dot(this.vertices[i]);
+            if (p < min) {
+                min = p;
+            } else if (p > max) {
+                max = p;
+            }
+        }
+        var proj = new Projection({ min: min, max: max });
+        return proj;
+    };
+    return Shape;
+})();
+
+var Projection = (function () {
+    function Projection(properties) {
+        this.min = properties.min;
+        this.max = properties.max;
+    }
+    Projection.prototype.overlap = function (p2) {
+        var isOverlapping = false;
+        if (this.max >= p2.min && this.max <= p2.max || this.min >= p2.min && this.min <= p2.max || p2.min >= this.min && p2.min <= this.max || p2.max >= this.min && p2.max <= this.max) {
+            isOverlapping = true;
+        }
+        return isOverlapping;
+    };
+    return Projection;
+})();
 //# sourceMappingURL=classes.js.map

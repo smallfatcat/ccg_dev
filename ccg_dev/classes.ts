@@ -94,15 +94,14 @@ class Vector2D {
   perp() {
     // the perp method is just (x, y) => (-y, x) or (y, -x)
     var result: Vector2D = new Vector2D({ x: 0, y: 0 });
-    result.x = 1 * this.y;
-    result.y = -1 * this.x;
+    result.x = -1 * this.y;
+    result.y = 1 * this.x;
     return result;
   }
   dot(B: Vector2D) {
     var n: number = (this.x * B.x) + (this.y * B.y);
     return n;
   }
- }
 }
 
 interface Vector2DProps {
@@ -295,7 +294,7 @@ interface RectProps extends Vector2DProps {
 class Shape {
   vertices: Vector2D[];
   constructor(properties: ShapeProps) {
-    this.vertices = [];
+    this.vertices = properties.vertices;
 
   }
 
@@ -303,14 +302,15 @@ class Shape {
     var axes: Vector2D[] = [];
     // loop over the vertices
     for (var i = 0; i < this.vertices.length; i++) {
+      console.log(this.vertices[i + 1 == this.vertices.length ? 0 : i + 1])
       // get the current vertex
-      var p1: Vector2D = this.vertices[i];
+      var p1: Vector2D = new Vector2D(this.vertices[i]);
       // get the next vertex
-      var p2: Vector2D = this.vertices[i + 1 == this.vertices.length ? 0 : i + 1];
+      var p2: Vector2D = new Vector2D(this.vertices[i + 1 == this.vertices.length ? 0 : i + 1]);
       // subtract the two to get the edge vector
-      var edge: Vector2D = p1.subtract(p2);
+      var edge: Vector2D = new Vector2D(p1.subtract(p2));
       // get either perpendicular vector
-      var normal: Vector2D = edge.perp();
+      var normal: Vector2D = new Vector2D(edge.perp());
       // the perp method is just (x, y) => (-y, x) or (y, -x)
       axes.push(normal);
     }
@@ -347,7 +347,13 @@ class Projection {
   }
   overlap(p2: Projection){
     var isOverlapping: boolean = false;
-    if (this.max > p2.min || this.min < p2.max) {
+    if (
+      this.max >= p2.min && this.max <= p2.max ||
+      this.min >= p2.min && this.min <= p2.max ||
+      p2.min >= this.min && p2.min <= this.max ||
+      p2.max >= this.min && p2.max <= this.max
+      )
+    {
       isOverlapping = true;
     }
     return isOverlapping;

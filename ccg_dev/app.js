@@ -87,8 +87,10 @@ function init() {
     gPlayers = [];
     gRects = [];
 
-    var rect = new Rect({ x: 400, y: 400, width: 50, height: 50 });
-    gRects.push(rect);
+    var rect1 = new Rect({ x: 400, y: 400, width: 50, height: 50 });
+    var rect2 = new Rect({ x: 425, y: 425, width: 50, height: 50 });
+    gRects.push(rect1);
+    gRects.push(rect2);
 
     var posList = createNonCollidingVectors(MAX_PLAYERS, INDENT, MAX_WIDTH - INDENT, ((DETECT_RADIUS * 2) + 32));
 
