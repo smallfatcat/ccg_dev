@@ -18132,7 +18132,7 @@ PIXI.JsonLoader.prototype.onJSONLoaded = function () {
                     var realSize = frameData[i].spriteSourceSize;
                     trim = new PIXI.Rectangle(realSize.x, realSize.y, actualSize.w, actualSize.h);
                 }
-                PIXI.TextureCache[i] = new PIXI.Texture(this.texture, textureSize, crop, trim);
+                PIXI.TextureCache[frameData[i].filename] = new PIXI.Texture(this.texture, textureSize, crop, trim);
             }
         }
 

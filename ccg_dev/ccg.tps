@@ -102,7 +102,7 @@
         <key>algorithmSettings</key>
         <struct type="AlgorithmSettings">
             <key>algorithm</key>
-            <enum type="AlgorithmSettings::AlgorithmId">MaxRects</enum>
+            <enum type="AlgorithmSettings::AlgorithmId">Basic</enum>
             <key>freeSizeMode</key>
             <enum type="AlgorithmSettings::AlgorithmFreeSizeMode">Best</enum>
             <key>sizeConstraints</key>
@@ -180,7 +180,7 @@
             <key>trimThreshold</key>
             <uint>1</uint>
             <key>trimMode</key>
-            <enum type="SpriteSettings::TrimMode">Trim</enum>
+            <enum type="SpriteSettings::TrimMode">None</enum>
             <key>heuristicMask</key>
             <false/>
             <key>pivotPoint</key>
@@ -188,8 +188,12 @@
         </struct>
         <key>fileList</key>
         <array>
-            <filename>man_green.png</filename>
-            <filename>man_red.png</filename>
+            <filename>blue_ginger_2.png</filename>
+            <filename>blue_ginger_1.png</filename>
+            <filename>blue_ginger_0.png</filename>
+            <filename>blue_brown_2.png</filename>
+            <filename>blue_brown_1.png</filename>
+            <filename>blue_brown_0.png</filename>
         </array>
         <key>ignoreFileList</key>
         <array/>

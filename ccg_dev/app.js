@@ -49,6 +49,8 @@ var gInfoWindow;
 var gSelectedPlayerIDs = [];
 
 var gSprites = [];
+var gCar;
+var gExplosions = [];
 var textures = [];
 var stage;
 var renderer;

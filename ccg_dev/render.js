@@ -2,7 +2,7 @@
 function renderPlayAreaPixi() {
     if (!gPlayAreaCanvasCreated) {
         // create an array of assets to load
-        var assetsToLoader = ["spritesheet.json"];
+        var assetsToLoader = ["spritesheet.json", "explosion.json"];
 
         // create a new loader
         loader = new PIXI.AssetLoader(assetsToLoader);
@@ -33,23 +33,38 @@ function renderPlayAreaPixi() {
         gPlayAreaCanvasCreated = true;
 
         // create a texture from an image path
-        textures[0] = PIXI.Texture.fromImage("man_red.png");
-        textures[1] = PIXI.Texture.fromImage("man_green.png");
-        textures[2] = PIXI.Texture.fromImage("level_1.png");
+        textures[0] = PIXI.Texture.fromImage("level_1.png");
+        textures[1] = PIXI.Texture.fromImage("police_car.png");
 
+        // create a level sprite
         var levelSprite = new PIXI.Sprite(textures[2]);
 
         // center the sprites anchor point
         levelSprite.anchor.x = 0.5;
         levelSprite.anchor.y = 0.5;
 
-        // move the sprite t the center of the screen
+        // move the level sprite to the center of the screen
         levelSprite.position.x = 400;
         levelSprite.position.y = 400;
         stage.addChild(levelSprite);
 
+        // create a new gfx object
         gfxObject = new PIXI.Graphics();
         stage.addChild(gfxObject);
+
+        // create a new car using the texture
+        var car = new PIXI.Sprite(textures[1]);
+
+        // center the cars anchor point
+        car.anchor.x = 0.5;
+        car.anchor.y = 0.5;
+
+        // move the car sprite to the center of the screen
+        car.position.x = 500;
+        car.position.y = 300;
+        car.rotation = Math.PI / 4;
+        gCar = car;
+        stage.addChild(car);
         /*
         var container = new PIXI.SpriteBatch();
         stage.addChild(container);
@@ -136,17 +151,46 @@ function animate() {
 
 function onAssetsLoaded() {
     // create an array to store the textures
-    var animationTextures = [];
+    var blue_brown = [];
 
-    for (var i = 0; i < 3; i++) {
-        var texture = PIXI.Texture.fromFrame(String(i));
-        animationTextures.push(texture);
+    for (var i = 0; i < 4; i++) {
+        var texture = PIXI.Texture.fromFrame('blue_brown_' + gPlayerAnimationSequence[i] + '.png');
+        blue_brown.push(texture);
     }
     ;
 
+    var blue_ginger = [];
+
+    for (var i = 0; i < 4; i++) {
+        var texture = PIXI.Texture.fromFrame('blue_ginger_' + gPlayerAnimationSequence[i] + '.png');
+        blue_ginger.push(texture);
+    }
+    ;
+
+    var explosion = [];
+
+    for (var i = 1; i < 45; i++) {
+        var texture = PIXI.Texture.fromFrame('Explosion4_' + pad(String(i), 3) + '.png');
+        explosion.push(texture);
+    }
+
+    var explosionAnimation = new PIXI.MovieClip(explosion);
+    explosionAnimation.position.x = 300;
+    explosionAnimation.position.y = 300;
+    explosionAnimation.anchor.x = 0.5;
+    explosionAnimation.anchor.y = 0.5;
+
+    explosionAnimation.gotoAndPlay(0);
+    gExplosions.push(explosionAnimation);
+
     for (var i = 0; i < gPlayers.length; i++) {
         // create a MovieClip
-        var playerAnimation = new PIXI.MovieClip(animationTextures);
+        var playerAnimation;
+        if (Math.random() < 0.5) {
+            playerAnimation = new PIXI.MovieClip(blue_brown);
+        } else {
+            playerAnimation = new PIXI.MovieClip(blue_ginger);
+        }
 
         playerAnimation.position.x = gPlayers[i].pos.x;
         playerAnimation.position.y = gPlayers[i].pos.y;
@@ -165,8 +209,16 @@ function onAssetsLoaded() {
         gSprites.push(playerAnimation);
     }
 
+    stage.addChild(explosionAnimation);
+
     // start animating
     requestAnimFrame(animate);
+}
+
+function pad(n, width, z) {
+    z = z || '0';
+    n = n + '';
+    return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
 }
 
 function renderPlayArea() {
@@ -307,12 +359,12 @@ function drawImage(ctx, x, y, a, width, imgID) {
 }
 
 function nextFrame() {
-    if (gStats.frameCounter % 10 == 0) {
+    if (gStats.frameCounter % 5 == 0) {
         gPlayerAnimationIndex++;
         if (gPlayerAnimationIndex > 4) {
             gPlayerAnimationIndex = 0;
         }
     }
-    return gPlayerAnimationSequence[gPlayerAnimationIndex];
+    return gPlayerAnimationIndex;
 }
 //# sourceMappingURL=render.js.map

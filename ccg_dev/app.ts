@@ -54,6 +54,8 @@ var gInfoWindow: InfoWindow;
 var gSelectedPlayerIDs: number[] = [];
 
 var gSprites: PIXI.MovieClip[] = [];
+var gCar: PIXI.Sprite;
+var gExplosions: PIXI.MovieClip[] = [];
 var textures: PIXI.Texture[] = [];
 var stage: PIXI.Stage;
 var renderer: PIXI.IPixiRenderer;
