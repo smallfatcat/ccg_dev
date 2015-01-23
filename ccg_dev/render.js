@@ -123,7 +123,7 @@ function animate() {
             gSprites[i].position.y = gPlayers[i].pos.y;
             var angleToDest = gPlayers[i].pos.getAngleTo(gPlayers[i].destination) + (Math.PI / 2);
             gSprites[i].rotation = angleToDest;
-            gfxObject.lineStyle(2, 0x000000, 1);
+            gfxObject.lineStyle(2, 0x000000, 0.2);
             if (!gPause) {
                 if (gPlayers[i].isMoving) {
                     gSprites[i].gotoAndStop(nextFrameID);
@@ -177,6 +177,46 @@ function onAssetsLoaded() {
     }
     ;
 
+    var red_brown = [];
+
+    for (var i = 0; i < 4; i++) {
+        var texture = PIXI.Texture.fromFrame('red_brown_' + gPlayerAnimationSequence[i] + '.png');
+        red_brown.push(texture);
+    }
+    ;
+
+    var purple_brown = [];
+
+    for (var i = 0; i < 4; i++) {
+        var texture = PIXI.Texture.fromFrame('purple_brown_' + gPlayerAnimationSequence[i] + '.png');
+        purple_brown.push(texture);
+    }
+    ;
+
+    var foot1_brown = [];
+
+    for (var i = 0; i < 4; i++) {
+        var texture = PIXI.Texture.fromFrame('foot1_brown_' + gPlayerAnimationSequence[i] + '.png');
+        foot1_brown.push(texture);
+    }
+    ;
+
+    var foot2_brown = [];
+
+    for (var i = 0; i < 4; i++) {
+        var texture = PIXI.Texture.fromFrame('foot2_brown_' + gPlayerAnimationSequence[i] + '.png');
+        foot2_brown.push(texture);
+    }
+    ;
+
+    var foot2_fat_brown = [];
+
+    for (var i = 0; i < 4; i++) {
+        var texture = PIXI.Texture.fromFrame('foot2_fat_brown_' + gPlayerAnimationSequence[i] + '.png');
+        foot2_fat_brown.push(texture);
+    }
+    ;
+
     var explosion = [];
 
     for (var i = 1; i < 45; i++) {
@@ -196,10 +236,19 @@ function onAssetsLoaded() {
     for (var i = 0; i < gPlayers.length; i++) {
         // create a MovieClip
         var playerAnimation;
-        if (Math.random() < 0.5) {
-            playerAnimation = new PIXI.MovieClip(blue_brown);
+        if (gPlayers[i].team == 0) {
+            //playerAnimation = new PIXI.MovieClip(foot1_brown);
+            if (Math.random() < 0.5) {
+                playerAnimation = new PIXI.MovieClip(blue_brown);
+            } else {
+                playerAnimation = new PIXI.MovieClip(blue_ginger);
+            }
         } else {
-            playerAnimation = new PIXI.MovieClip(blue_ginger);
+            if (Math.random() < 0.9) {
+                playerAnimation = new PIXI.MovieClip(red_brown);
+            } else {
+                playerAnimation = new PIXI.MovieClip(purple_brown);
+            }
         }
 
         playerAnimation.position.x = gPlayers[i].pos.x;
