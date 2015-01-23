@@ -71,6 +71,7 @@ var gPause_released: boolean = true;
 var gPlayAreaCanvasCreated: boolean = false;
 var gApproachTimerFlag: boolean = false;
 var gReset: boolean = false;
+var gAvoidOn: boolean = false;
 
 
 // Set up pointer

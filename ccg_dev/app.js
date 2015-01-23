@@ -66,6 +66,7 @@ var gPause_released = true;
 var gPlayAreaCanvasCreated = false;
 var gApproachTimerFlag = false;
 var gReset = false;
+var gAvoidOn = false;
 
 // Set up pointer
 var pointerPos = new Vector2D({ x: 0, y: 0 });

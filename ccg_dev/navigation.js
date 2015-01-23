@@ -11,18 +11,20 @@
         var newV = new Vector2D({ x: 0, y: 0 });
         newV = reorient(originalV, getVectorAB(player.pos, player.destination), player.id);
 
-        // Avoidance algorithm
-        var closestPlayerID = selectOtherPlayer(player.pos.x, player.pos.y, player.id);
-        if (closestPlayerID != -1) {
-            var closestPlayer = gPlayers[closestPlayerID];
-            var closesetDistance = getDistance(player.pos, closestPlayer.pos);
-            var detectRadius = player.collisionRadius + closestPlayer.collisionRadius + DETECT_RADIUS;
-            if (closesetDistance < detectRadius) {
-                var brakingForce = calcBrakingForce(closesetDistance - player.collisionRadius - closestPlayer.collisionRadius);
-                player.speed = PHYSICS_MAXSPEED * (1 - brakingForce);
+        if (gAvoidOn) {
+            // Avoidance algorithm
+            var closestPlayerID = selectOtherPlayer(player.pos.x, player.pos.y, player.id);
+            if (closestPlayerID != -1) {
+                var closestPlayer = gPlayers[closestPlayerID];
+                var closesetDistance = getDistance(player.pos, closestPlayer.pos);
+                var detectRadius = player.collisionRadius + closestPlayer.collisionRadius + DETECT_RADIUS;
+                if (closesetDistance < detectRadius) {
+                    var brakingForce = calcBrakingForce(closesetDistance - player.collisionRadius - closestPlayer.collisionRadius);
+                    player.speed = PHYSICS_MAXSPEED * (1 - brakingForce);
 
-                //console.log(player.id + ' Avoiding: ' + closestPlayer.id);
-                newV = avoid(newV, getVectorAB(player.pos, closestPlayer.pos));
+                    //console.log(player.id + ' Avoiding: ' + closestPlayer.id);
+                    newV = avoid(newV, getVectorAB(player.pos, closestPlayer.pos));
+                }
             }
         }
         player.vel = newV;

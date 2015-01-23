@@ -39,7 +39,7 @@ function renderPlayAreaPixi() {
     textures[1] = PIXI.Texture.fromImage("police_car.png");
 
     // create a level sprite
-    var levelSprite = new PIXI.Sprite(textures[2]);
+    var levelSprite = new PIXI.Sprite(textures[0]);
     // center the sprites anchor point
     levelSprite.anchor.x = 0.5;
     levelSprite.anchor.y = 0.5;
@@ -108,6 +108,17 @@ function animate() {
   gfxObject.clear();
   //requestAnimationFrame(animate);
   var nextFrameID = nextFrame();
+  if (!gPause) {
+    gExplosions[0].play();
+    if (gExplosions[0].currentFrame == gExplosions[0].textures.length - 1) {
+      gExplosions[0].position.x = Math.random() * 800;
+      gExplosions[0].position.y = Math.random() * 800;
+      gExplosions[0].rotation = Math.random() * Math.PI * 2;
+    }
+  }
+  else {
+    gExplosions[0].stop();
+  }
   if (gSprites.length > 0) {
     for (var i = 0; i < MAX_PLAYERS; i++) {
       gSprites[i].position.x = gPlayers[i].pos.x;
