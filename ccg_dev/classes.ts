@@ -91,6 +91,18 @@ class Vector2D {
     result.y = this.y - B.y;
     return result;
   }
+  add(B: Vector2D) {
+    var result: Vector2D = new Vector2D({ x: 0, y: 0 });
+    result.x = this.x + B.x;
+    result.y = this.y + B.y;
+    return result;
+  }
+  multiply(n: number) {
+    var result: Vector2D = new Vector2D({ x: 0, y: 0 });
+    result.x = this.x * n;
+    result.y = this.y * n;
+    return result;
+  }
   perp() {
     // the perp method is just (x, y) => (-y, x) or (y, -x)
     var result: Vector2D = new Vector2D({ x: 0, y: 0 });
@@ -363,6 +375,67 @@ class Projection {
 interface ProjectionProps {
   min: number;
   max: number;
+}
+
+interface LineCollisonResult {
+  isColliding: boolean;
+  intersection: Vector2D;
+}
+
+class VisGraph {
+  nodes: VGnode[];
+  constructor() {
+    this.nodes = [];
+  }
+  addNode(node: VGnode) {
+    this.nodes.push(node);
+  }
+  removeNode(id: number) {
+    // loop through all visible nodes
+    for (var i = 0; i < this.nodes[id].visibleNodes.length; i++) {
+      this.nodes[id].removeVisible(this.nodes[id].visibleNodes[i].id);
+    }
+    this.nodes.splice(id, 1);
+  }
+}
+
+class VGnode {
+  id: number;
+  visibleNodes: VGnodeEntry[];
+  constructor(properties: VGnodeProps) {
+    this.id = properties.id;
+    this.visibleNodes = [];
+  }
+  addVisible(nodeEntry: VGnodeEntry) {
+    this.visibleNodes.push(nodeEntry);
+  }
+  removeVisible(id: number) {
+    for (var i = 0; i < this.visibleNodes.length; i++) {
+      if (this.visibleNodes[i].id == id) {
+        // remove this entry
+        this.visibleNodes.splice(i, 1);
+        return;
+      }
+    }
+  }
+}
+
+interface VGnodeProps {
+  id: number;
+}
+
+class VGnodeEntry {
+  id: number;
+  distance: number;
+  constructor(properties: VGnodeEntryProps) {
+    this.id = properties.id;
+    this.distance = properties.distance;
+  }
+}
+
+interface VGnodeEntryProps {
+  id: number;
+  distance: number;
 }
 
 

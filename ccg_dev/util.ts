@@ -122,3 +122,50 @@ var t1 = new Shape({
 ] });
 
 */
+
+//inline double Dot(const Point & a,const Point & b) { return (a.x * b.x) + (a.y * b.y); }
+//inline double PerpDot(const Point & a,const Point & b) { return (a.y * b.x) - (a.x * b.y); }
+
+function LineCollision(A1: Vector2D, A2: Vector2D, B1: Vector2D, B2: Vector2D){
+  var returnValue: LineCollisonResult;
+  var isColliding: boolean = false;
+  var out: number = 0;
+  var intersection: Vector2D = new Vector2D({x: 0, y: 0});
+  var a: Vector2D = new Vector2D(A2.subtract(A1));
+  var b: Vector2D = new Vector2D(B2.subtract(B1));
+  
+  var f: number = a.perp().dot(b);
+  if (f == 0) {
+    // lines are parallel
+    return { isColliding: false, intersection: intersection};
+  }
+    
+  var c: Vector2D = new Vector2D(B2.subtract(A2));
+  var aa: number = a.perp().dot(c);
+  var bb: number = b.perp().dot(c);
+
+  if (f < 0) {
+    if (aa > 0) return { isColliding: false, intersection: intersection };
+    if (bb > 0) return { isColliding: false, intersection: intersection };
+    if (aa < f) return { isColliding: false, intersection: intersection };
+    if (bb < f) return { isColliding: false, intersection: intersection };
+  }
+  else {
+  if (aa < 0) return { isColliding: false, intersection: intersection };
+  if (bb < 0) return { isColliding: false, intersection: intersection };
+  if (aa > f) return { isColliding: false, intersection: intersection };
+  if (bb > f) return { isColliding: false, intersection: intersection };
+  }
+  out = 1.0 - (aa / f);
+  intersection = B2.subtract(B1).multiply(out).add(B1);
+  return { isColliding: true, intersection: intersection };
+}
+
+function isVisible(A1: Vector2D, A2: Vector2D) {
+  // check line collision for A1, A2 between B1, B2 from each edge
+    // if collision is on the end of the edge, allow it
+    // else
+    return false;
+  // if we found no collisions
+  return true;
+}

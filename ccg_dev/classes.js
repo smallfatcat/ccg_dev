@@ -84,6 +84,18 @@ var Vector2D = (function () {
         result.y = this.y - B.y;
         return result;
     };
+    Vector2D.prototype.add = function (B) {
+        var result = new Vector2D({ x: 0, y: 0 });
+        result.x = this.x + B.x;
+        result.y = this.y + B.y;
+        return result;
+    };
+    Vector2D.prototype.multiply = function (n) {
+        var result = new Vector2D({ x: 0, y: 0 });
+        result.x = this.x * n;
+        result.y = this.y * n;
+        return result;
+    };
     Vector2D.prototype.perp = function () {
         // the perp method is just (x, y) => (-y, x) or (y, -x)
         var result = new Vector2D({ x: 0, y: 0 });
@@ -257,5 +269,49 @@ var Projection = (function () {
         return isOverlapping;
     };
     return Projection;
+})();
+
+var VisGraph = (function () {
+    function VisGraph() {
+        this.nodes = [];
+    }
+    VisGraph.prototype.addNode = function (node) {
+        this.nodes.push(node);
+    };
+    VisGraph.prototype.removeNode = function (id) {
+        for (var i = 0; i < this.nodes[id].visibleNodes.length; i++) {
+            this.nodes[id].removeVisible(this.nodes[id].visibleNodes[i].id);
+        }
+        this.nodes.splice(id, 1);
+    };
+    return VisGraph;
+})();
+
+var VGnode = (function () {
+    function VGnode(properties) {
+        this.id = properties.id;
+        this.visibleNodes = [];
+    }
+    VGnode.prototype.addVisible = function (nodeEntry) {
+        this.visibleNodes.push(nodeEntry);
+    };
+    VGnode.prototype.removeVisible = function (id) {
+        for (var i = 0; i < this.visibleNodes.length; i++) {
+            if (this.visibleNodes[i].id == id) {
+                // remove this entry
+                this.visibleNodes.splice(i, 1);
+                return;
+            }
+        }
+    };
+    return VGnode;
+})();
+
+var VGnodeEntry = (function () {
+    function VGnodeEntry(properties) {
+        this.id = properties.id;
+        this.distance = properties.distance;
+    }
+    return VGnodeEntry;
 })();
 //# sourceMappingURL=classes.js.map
