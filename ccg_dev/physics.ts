@@ -38,6 +38,9 @@ function calcPlayerPhysics() {
     if (gPlayers[i].isAlive) {
       // Do physics for all test objects 
       physicsPlayer(gPlayers[i]);
+      if (rectCollide(gRects[0], getPlayerRect(gPlayers[i]))) {
+        //console.log('player collision: ' + i + ' x: ' + gPlayers[i].pos.x + ' y:' + gPlayers[i].pos.y );
+      }
     }
   }
   /*

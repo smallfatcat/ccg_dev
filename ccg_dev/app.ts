@@ -26,7 +26,7 @@ var PHYSICS_MAXSPEED: number   = 100;
 var PHYSICS_MAXACC: number     = 2000;
 var PHYSICS_MINDIST: number    = 2;
 var MAX_TURN: number           = 5;
-var DETECT_RADIUS: number      = 4;
+var DETECT_RADIUS: number      = 8;
 
 var MAX_PLAYERS: number        = 200;
 var TEAM_A_PLAYERS: number     = 100;
@@ -45,6 +45,7 @@ var INDENT: number             = 100;
 var gPlayers: Player[] = [];
 var gBombs: Bomb[] = [];
 var gCollisions: Collision[] = [];
+var gRects: Rect[] = [];
 
 // Global objects
 var gPointer: Pointer;
@@ -90,13 +91,17 @@ function init() {
   var d = new Date();
   gStats = new Stats({ startTime: d.getTime() });
   gPlayers = [];
+  gRects = [];
+
+  var rect = new Rect({ x: 400, y: 400, width: 50, height: 50 });
+  gRects.push(rect);
 
   var posList: Vector2D[] = createNonCollidingVectors(MAX_PLAYERS, INDENT, MAX_WIDTH - INDENT, ((DETECT_RADIUS * 2) + 32));
   //var destList: Vector2D[] = createNonCollidingVectors(MAX_PLAYERS, INDENT, MAX_WIDTH - INDENT, ((DETECT_RADIUS * 2) + 32));
   //var posList: Vector2D[] = createGrid(20, 400, 100, ((DETECT_RADIUS * 2) + 16), 5);
   //posList = posList.concat(createGrid(20, 100, 100, ((DETECT_RADIUS * 2) + 16), 5));
-  var destList: Vector2D[] = createGrid(50, 100, 100, ((DETECT_RADIUS * 2) + 16), 5);
-  destList = destList.concat(createGrid(50, 400, 100, ((DETECT_RADIUS * 2) + 16), 5));
+  var destList: Vector2D[] = createGrid(50, 100, 100, ((DETECT_RADIUS * 2)), 5);
+  destList = destList.concat(createGrid(50, 400, 100, ((DETECT_RADIUS * 2)), 5));
 
   // Set up some players
   for (var i = 0; i < MAX_PLAYERS; i++) {

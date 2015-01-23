@@ -57,4 +57,60 @@ function degToRad(d) {
     var r = (d / 360) * Math.PI * 2;
     return r;
 }
+
+function rectCollide(rect1, rect2) {
+    var collided = false;
+    if (rect1.x < rect2.x + rect2.width && rect1.x + rect1.width > rect2.x && rect1.y < rect2.y + rect2.height && rect1.height + rect1.y > rect2.y) {
+        // collision detected!
+        collided = true;
+    }
+    return collided;
+}
+
+function getPlayerRect(player) {
+    var playerRect = new Rect({
+        x: player.pos.x - player.collisionRadius,
+        y: player.pos.y - player.collisionRadius,
+        width: player.collisionRadius * 2,
+        height: player.collisionRadius * 2
+    });
+    return playerRect;
+}
+
+function checkSATcollision(shape1, shape2) {
+    var axes1 = shape1.getAxes();
+    var axes2 = shape2.getAxes();
+
+    for (var i = 0; i < axes1.length; i++) {
+        var axis = axes1[i];
+
+        // project both shapes onto the axis
+        var p1 = shape1.project(axis);
+        var p2 = shape2.project(axis);
+
+        // do the projections overlap?
+        if (!p1.overlap(p2)) {
+            // then we can guarantee that the shapes do not overlap
+            return false;
+        }
+    }
+
+    for (var i = 0; i < axes2.length; i++) {
+        var axis = axes2[i];
+
+        // project both shapes onto the axis
+        var p1 = shape1.project(axis);
+        var p2 = shape2.project(axis);
+
+        // do the projections overlap?
+        if (!p1.overlap(p2)) {
+            // then we can guarantee that the shapes do not overlap
+            return false;
+        }
+    }
+
+    // if we get here then we know that every axis had overlap on it
+    // so we can guarantee an intersection
+    return true;
+}
 //# sourceMappingURL=util.js.map

@@ -85,6 +85,24 @@ class Vector2D {
     var angleAB: number = angleToB - angleToA;
     return angleAB;
   }
+  subtract(B: Vector2D) {
+    var result: Vector2D = new Vector2D({ x: 0, y: 0 });
+    result.x = this.x - B.x;
+    result.y = this.y - B.y;
+    return result;
+  }
+  perp() {
+    // the perp method is just (x, y) => (-y, x) or (y, -x)
+    var result: Vector2D = new Vector2D({ x: 0, y: 0 });
+    result.x = 1 * this.y;
+    result.y = -1 * this.x;
+    return result;
+  }
+  dot(B: Vector2D) {
+    var n: number = (this.x * B.x) + (this.y * B.y);
+    return n;
+  }
+ }
 }
 
 interface Vector2DProps {
@@ -257,6 +275,88 @@ class Pointer extends Entity {
 
 interface PointerProps extends EntProps {
   mode: string;
+}
+
+class Rect extends Vector2D{
+  width: number;
+  height: number;
+  constructor(properties: RectProps) {
+    super(properties);
+    this.width = properties.width;
+    this.height = properties.height;
+  }
+}
+
+interface RectProps extends Vector2DProps {
+  width: number;
+  height: number;
+}
+
+class Shape {
+  vertices: Vector2D[];
+  constructor(properties: ShapeProps) {
+    this.vertices = [];
+
+  }
+
+  getAxes() {
+    var axes: Vector2D[] = [];
+    // loop over the vertices
+    for (var i = 0; i < this.vertices.length; i++) {
+      // get the current vertex
+      var p1: Vector2D = this.vertices[i];
+      // get the next vertex
+      var p2: Vector2D = this.vertices[i + 1 == this.vertices.length ? 0 : i + 1];
+      // subtract the two to get the edge vector
+      var edge: Vector2D = p1.subtract(p2);
+      // get either perpendicular vector
+      var normal: Vector2D = edge.perp();
+      // the perp method is just (x, y) => (-y, x) or (y, -x)
+      axes.push(normal);
+    }
+    return axes;
+  }
+
+  project(axis: Vector2D) {
+    var min: number = axis.dot(this.vertices[0]);
+    var max: number = min;
+    for (var i = 1; i < this.vertices.length; i++) {
+      // NOTE: the axis must be normalized to get accurate projections
+      var p: number = axis.dot(this.vertices[i]);
+      if (p < min) {
+        min = p;
+      } else if (p > max) {
+        max = p;
+      }
+    }
+    var proj: Projection = new Projection({min: min, max: max});
+    return proj;
+  }
+}
+
+interface ShapeProps {
+  vertices: Vector2D[];
+}
+
+class Projection {
+  min: number;
+  max: number;
+  constructor(properties: ProjectionProps) {
+    this.min = properties.min;
+    this.max = properties.max;
+  }
+  overlap(p2: Projection){
+    var isOverlapping: boolean = false;
+    if (this.max > p2.min || this.min < p2.max) {
+      isOverlapping = true;
+    }
+    return isOverlapping;
+  }
+}
+
+interface ProjectionProps {
+  min: number;
+  max: number;
 }
 
 

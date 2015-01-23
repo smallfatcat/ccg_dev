@@ -57,3 +57,57 @@ function degToRad(d: number) {
   var r: number = (d / 360) * Math.PI * 2; 
   return r;
 }
+
+function rectCollide(rect1: Rect, rect2: Rect) {
+  var collided: boolean = false;
+  if (rect1.x < rect2.x + rect2.width &&
+    rect1.x + rect1.width > rect2.x &&
+    rect1.y < rect2.y + rect2.height &&
+    rect1.height + rect1.y > rect2.y) {
+    // collision detected!
+    collided = true;
+  }
+  return collided;
+}
+
+function getPlayerRect(player: Player) {
+  var playerRect: Rect = new Rect({
+    x: player.pos.x-player.collisionRadius,
+    y: player.pos.y - player.collisionRadius,
+    width: player.collisionRadius * 2,
+    height: player.collisionRadius * 2
+  })
+  return playerRect;
+}
+
+function checkSATcollision(shape1: Shape, shape2: Shape) {
+  var axes1: Vector2D[] = shape1.getAxes();
+  var axes2: Vector2D[] = shape2.getAxes();
+  // loop over the axes1
+  for (var i = 0; i < axes1.length; i++) {
+    var axis: Vector2D = axes1[i];
+    // project both shapes onto the axis
+    var p1: Projection = shape1.project(axis);
+    var p2: Projection = shape2.project(axis);
+    // do the projections overlap?
+    if (!p1.overlap(p2)) {
+      // then we can guarantee that the shapes do not overlap
+      return false;
+    }
+  }
+  // loop over the axes2
+  for (var i = 0; i < axes2.length; i++) {
+    var axis: Vector2D = axes2[i];
+    // project both shapes onto the axis
+    var p1: Projection = shape1.project(axis);
+    var p2: Projection = shape2.project(axis);
+      // do the projections overlap?
+      if (!p1.overlap(p2)) {
+        // then we can guarantee that the shapes do not overlap
+        return false;
+    }
+  }
+  // if we get here then we know that every axis had overlap on it
+  // so we can guarantee an intersection
+  return true;
+}

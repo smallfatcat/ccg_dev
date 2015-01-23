@@ -170,4 +170,14 @@ var Pointer = (function (_super) {
     }
     return Pointer;
 })(Entity);
+
+var Rect = (function (_super) {
+    __extends(Rect, _super);
+    function Rect(properties) {
+        _super.call(this, properties);
+        this.width = properties.width;
+        this.height = properties.height;
+    }
+    return Rect;
+})(Vector2D);
 //# sourceMappingURL=classes.js.map
