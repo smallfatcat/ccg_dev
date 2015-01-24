@@ -220,6 +220,39 @@ function buildVG() {
     return VG;
 }
 
+function addNewTarget(x, y) {
+    var targetPos = new Vector2D({ x: x, y: y });
+    var target = new VGnode({ id: gVG.nodes.length, pos: targetPos });
+    gVG.addNode(target);
+
+    var thisNode = gVG.nodes[gVG.nodes.length - 1];
+    for (var i = 0; i < gVG.nodes.length - 1; i++) {
+        var otherNode = gVG.nodes[i];
+
+        // Check for visibility
+        if (isVisible(thisNode.pos, otherNode.pos)) {
+            var distance = getDistance(thisNode.pos, otherNode.pos);
+            var thisNodeEntry = new VGnodeEntry({
+                id: otherNode.id,
+                distance: distance
+            });
+            var otherNodeEntry = new VGnodeEntry({
+                id: thisNode.id,
+                distance: distance
+            });
+            thisNode.addVisible(thisNodeEntry);
+            otherNode.addVisible(otherNodeEntry);
+            console.log(thisNode.id + ' is visible from ' + otherNode.id + ' ax: ' + thisNode.pos.x + ' ay: ' + thisNode.pos.y + ' bx: ' + otherNode.pos.x + ' by: ' + otherNode.pos.y);
+        } else {
+            console.log(thisNode.id + ' is not visible from ' + otherNode.id + ' ax: ' + thisNode.pos.x + ' ay: ' + thisNode.pos.y + ' bx: ' + otherNode.pos.x + ' by: ' + otherNode.pos.y);
+        }
+    }
+}
+
+function addNewSource(x, y) {
+    addNewTarget(x, y);
+}
+
 function buildEdges() {
     var edges = [];
     for (var i = 0; i < gScenery.length; i++) {
@@ -229,5 +262,118 @@ function buildEdges() {
         }
     }
     return edges;
+}
+
+/*
+1  function Dijkstra(Graph, source):
+2
+3      dist[source] ← 0                       // Distance from source to source
+4      prev[source] ← undefined               // Previous node in optimal path initialization
+5
+6      for each vertex v in Graph:  // Initialization
+7          if v ≠ source            // Where v has not yet been removed from Q (unvisited nodes)
+8              dist[v] ← infinity             // Unknown distance function from source to v
+9              prev[v] ← undefined            // Previous node in optimal path from source
+10          end if
+11          add v to Q                     // All nodes initially in Q (unvisited nodes)
+12      end for
+13
+14      while Q is not empty:
+15          u ← vertex in Q with min dist[u]  // Source node in first case
+16          remove u from Q
+17
+18          for each neighbor v of u:           // where v has not yet been removed from Q.
+19              alt ← dist[u] + length(u, v)
+20              if alt < dist[v]:               // A shorter path to v has been found
+21                  dist[v] ← alt
+22                  prev[v] ← u
+23              end if
+24          end for
+25      end while
+26
+27      return dist[], prev[]
+28
+29  end function
+*/
+function Dijkstra() {
+    // Assumes the source is the last item in gVG and the target is penultimate item
+    var finalVG = new VisGraph();
+    var Q = new VisGraph();
+    var sourceID = gVG.nodes[gVG.nodes.length - 1].id;
+    var targetID = gVG.nodes[gVG.nodes.length - 2].id;
+    gVG.nodes[sourceID].distanceFromSource = 0;
+
+    for (var i = 0; i < gVG.nodes.length; i++) {
+        var v = gVG.nodes[i];
+        if (v.id != sourceID) {
+            v.distanceFromSource = Infinity;
+            v.prev = -1;
+        } else {
+        }
+        Q.nodes.push(v);
+    }
+
+    while (Q.nodes.length > 0) {
+        var u = Q.nodes.splice(getMinDistanceNodeID(Q), 1)[0];
+
+        for (i = 0; i < u.visibleNodes.length; i++) {
+            var vID = getIDinQ(Q, u.visibleNodes[i].id);
+            if (vID > -1) {
+                var v = Q.nodes[vID];
+                var alt = u.distanceFromSource + u.visibleNodes[i].distance;
+                if (alt < v.distanceFromSource) {
+                    v.distanceFromSource = alt;
+                    v.prev = u.id;
+                }
+            }
+        }
+        finalVG.nodes.push(u);
+    }
+    finalVG.nodes.sort(function (a, b) {
+        return a.id - b.id;
+    });
+    return finalVG;
+}
+
+function getMinDistanceNodeID(Q) {
+    var minDistance = Infinity;
+    var minID = -1;
+    for (var i = 0; i < Q.nodes.length; i++) {
+        if (Q.nodes[i].distanceFromSource < minDistance) {
+            minDistance = Q.nodes[i].distanceFromSource;
+            minID = i;
+        }
+    }
+    return minID;
+}
+
+function getIDinQ(Q, id) {
+    for (var i = 0; i < Q.nodes.length; i++) {
+        if (Q.nodes[i].id == id) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+function getWaypoints(sx, sy, tx, ty) {
+    addNewTarget(tx, ty);
+    var targetID = gVG.nodes.length - 1;
+    addNewSource(sx, sy);
+    var sourceID = gVG.nodes.length - 1;
+
+    var VG = Dijkstra();
+    var waypoints = [];
+    var nextID = VG.nodes[targetID].prev;
+    while (nextID != sourceID) {
+        waypoints.push(VG.nodes[nextID].id);
+        nextID = VG.nodes[nextID].prev;
+    }
+
+    //waypoints.push(sourceID);
+    gVG.removeNode(sourceID);
+    gVG.removeNode(targetID);
+
+    return waypoints;
 }
 //# sourceMappingURL=util.js.map

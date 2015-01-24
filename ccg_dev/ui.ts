@@ -27,6 +27,8 @@ function mouseDown(event) {
 
   if (gPointer.mode == 'makedest') {
     console.log('makedestbox');
+    gPlayers[gSelectedPlayerIDs[0]].emptyWaypoints();
+    gPlayers[gSelectedPlayerIDs[0]].setWaypoints(PointerPos);
     gPlayers[gSelectedPlayerIDs[0]].destination = PointerPos;
     gPlayers[gSelectedPlayerIDs[0]].isSelected = false;
     gPlayers[gSelectedPlayerIDs[0]].moveTowards(gPlayers[gSelectedPlayerIDs[0]].destination);
@@ -44,6 +46,8 @@ function mouseDown(event) {
       var rows: number = Math.ceil(Math.sqrt(n));
       var destGrid: Vector2D[] = createGrid(gPointer.pos.x, gPointer.pos.y, n, 32, rows);
       for (var i = 0; i < gSelectedPlayerIDs.length; i++) {
+        gPlayers[gSelectedPlayerIDs[i]].emptyWaypoints();
+        gPlayers[gSelectedPlayerIDs[i]].setWaypoints(destGrid[i]);
         gPlayers[gSelectedPlayerIDs[i]].destination = destGrid[i];
         gPlayers[gSelectedPlayerIDs[i]].isSelected = false;
         gPlayers[gSelectedPlayerIDs[i]].moveTowards(gPlayers[gSelectedPlayerIDs[i]].destination);
@@ -112,6 +116,10 @@ function selectPlayer(x: number, y: number) {
 
 function resetButton() {
   init();
+}
+
+function navHUDtoggle() {
+  gNavHUD = !gNavHUD;
 }
 
 function updateStats() {

@@ -25,6 +25,7 @@ var Player = (function (_super) {
         this.isMoving = false;
         this.isSelected = false;
         this.history = [];
+        this.waypoints = [];
     }
     Player.prototype.moveTowards = function (pos) {
         var towardsVector = getVectorAB(this.pos, pos);
@@ -48,6 +49,31 @@ var Player = (function (_super) {
     Player.prototype.stop = function () {
         this.vel.x = 0;
         this.vel.y = 0;
+    };
+    Player.prototype.addWaypoint = function (x, y) {
+        // first/next waypoint is the last element in the array
+        var waypoint = new Vector2D({ x: x, y: y });
+        this.waypoints.push(waypoint);
+    };
+    Player.prototype.emptyWaypoints = function () {
+        this.waypoints = [];
+    };
+    Player.prototype.removeWaypointAtPos = function (x, y) {
+        for (var i = 0; i < this.waypoints.length; i++) {
+            if (this.waypoints[i].x == x && this.waypoints[i].y == y) {
+                this.waypoints.splice(i, 1);
+                return;
+            }
+        }
+    };
+    Player.prototype.setWaypoints = function (target) {
+        var waypoints = getWaypoints(this.pos.x, this.pos.y, target.x, target.y);
+        this.addWaypoint(target.x, target.y);
+        for (var i = 0; i < waypoints.length; i++) {
+            var x = gVG.nodes[waypoints[i]].pos.x;
+            var y = gVG.nodes[waypoints[i]].pos.y;
+            this.addWaypoint(x, y);
+        }
     };
     return Player;
 })(Entity);

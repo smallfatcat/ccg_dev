@@ -4,13 +4,13 @@
 function physics() {
   // Check if game is paused
   if (!gPause) {
-    // Check for end of game
+    /*// Check for end of game
     if (gStats.playersMoving == 0 ) {
       if(!gReset) {
         gReset = true;
         setTimeout(reset, 1000);
       }
-    }
+    }*/
     calcPlayerPhysics();
     calcBombPhysics();
     if (gApproachTimerFlag) {

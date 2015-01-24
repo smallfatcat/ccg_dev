@@ -70,6 +70,7 @@ var gPlayAreaCanvasCreated = false;
 var gApproachTimerFlag = false;
 var gReset = false;
 var gAvoidOn = false;
+var gNavHUD = true;
 
 // Set up pointer
 var pointerPos = new Vector2D({ x: 0, y: 0 });
@@ -94,16 +95,24 @@ function init() {
     var scenery2 = new Scenery({ rect: new Rect({ x: 425, y: 425, width: 50, height: 50 }) });
     var scenery3 = new Scenery({ rect: new Rect({ x: 500, y: 200, width: 100, height: 100 }) });
     var scenery4 = new Scenery({ rect: new Rect({ x: 700, y: 125, width: 75, height: 100 }) });
+    var scenery5 = new Scenery({ rect: new Rect({ x: 100, y: 650, width: 50, height: 100 }) });
+    var scenery6 = new Scenery({ rect: new Rect({ x: 500, y: 650, width: 50, height: 100 }) });
+    var scenery7 = new Scenery({ rect: new Rect({ x: 150, y: 650, width: 450, height: 30 }) });
     gScenery.push(scenery1);
     gScenery.push(scenery2);
     gScenery.push(scenery3);
     gScenery.push(scenery4);
+    gScenery.push(scenery5);
+    gScenery.push(scenery6);
+    gScenery.push(scenery7);
 
     // Build Visibility Graph
     gEdges = buildEdges();
     gVG = buildVG();
 
-    var posList = createNonCollidingVectors(MAX_PLAYERS, INDENT, MAX_WIDTH - INDENT, ((DETECT_RADIUS * 2) + 32));
+    //var posList: Vector2D[] = createNonCollidingVectors(MAX_PLAYERS, INDENT, MAX_WIDTH - INDENT, ((DETECT_RADIUS * 2) + 32));
+    var posList = createGrid(50, 100, 100, ((DETECT_RADIUS * 2)), 5);
+    posList = posList.concat(createGrid(50, 400, 100, ((DETECT_RADIUS * 2)), 5));
 
     //var destList: Vector2D[] = createNonCollidingVectors(MAX_PLAYERS, INDENT, MAX_WIDTH - INDENT, ((DETECT_RADIUS * 2) + 32));
     //var posList: Vector2D[] = createGrid(20, 400, 100, ((DETECT_RADIUS * 2) + 16), 5);
@@ -135,6 +144,7 @@ function init() {
 
         //player.destination = {x: 400, y: 400};
         player.destination = destList[i];
+        player.setWaypoints(destList[i]);
 
         //player.destination = { x: (Math.random() * (MAX_WIDTH - (INDENT * 2))) + INDENT, y: (Math.random() * (MAX_HEIGHT - (INDENT * 2))) + INDENT };
         //player.destination = { x: (i < (MAX_PLAYERS / 2) ? ((i*64) + 100) : ((i-(MAX_PLAYERS/2))*64)+100), y: ((i < MAX_PLAYERS/2) ? 200 : 600) };

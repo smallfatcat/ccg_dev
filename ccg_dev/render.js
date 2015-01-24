@@ -127,7 +127,9 @@ function animate() {
             if (!gPause) {
                 if (gPlayers[i].isMoving) {
                     gSprites[i].gotoAndStop(nextFrameID);
-                    gfxObject.drawCircle(gPlayers[i].destination.x, gPlayers[i].destination.y, gPlayers[i].collisionRadius);
+                    if (gNavHUD) {
+                        gfxObject.drawCircle(gPlayers[i].destination.x, gPlayers[i].destination.y, gPlayers[i].collisionRadius);
+                    }
                 } else {
                     gSprites[i].gotoAndStop(0);
                 }
@@ -137,6 +139,16 @@ function animate() {
 
             if (gPlayers[i].isSelected) {
                 gfxObject.drawRect(gPlayers[i].pos.x - gPlayers[i].collisionRadius - 2, gPlayers[i].pos.y - gPlayers[i].collisionRadius - 2, (gPlayers[i].collisionRadius * 2) + 4, (gPlayers[i].collisionRadius * 2) + 4);
+            }
+
+            if (gNavHUD) {
+                if (gPlayers[i].waypoints.length > 0) {
+                    gfxObject.lineStyle(4, 0x0000FF, 0.2);
+                    gfxObject.moveTo(gPlayers[i].pos.x, gPlayers[i].pos.y);
+                    for (var j = gPlayers[i].waypoints.length - 1; j > -1; j--) {
+                        gfxObject.lineTo(gPlayers[i].waypoints[j].x, gPlayers[i].waypoints[j].y);
+                    }
+                }
             }
             /*
             gfxObject.lineStyle(2, 0x000044, 0.2);
@@ -151,19 +163,22 @@ function animate() {
     }
 
     // Draw selection box
+    gfxObject.lineStyle(2, 0x000000, 0.2);
     if (gPointer.mode == 'drag') {
         gfxObject.drawRect(gPointer.startDrag.x, gPointer.startDrag.y, gPointer.endDrag.x - gPointer.startDrag.x, gPointer.endDrag.y - gPointer.startDrag.y);
     }
     for (var i = 0; i < gScenery.length; i++) {
         gfxObject.drawRect(gScenery[i].rect.x, gScenery[i].rect.y, gScenery[i].rect.width, gScenery[i].rect.height);
     }
-    for (var i = 0; i < gVG.nodes.length; i++) {
-        gfxObject.lineStyle(2, 0x000000, 0.2);
-        gfxObject.drawCircle(gVG.nodes[i].pos.x, gVG.nodes[i].pos.y, 8);
-        gfxObject.lineStyle(1, 0xaa0000, 0.2);
-        for (var j = 0; j < gVG.nodes[i].visibleNodes.length; j++) {
-            gfxObject.moveTo(gVG.nodes[i].pos.x, gVG.nodes[i].pos.y);
-            gfxObject.lineTo(gVG.nodes[gVG.nodes[i].visibleNodes[j].id].pos.x, gVG.nodes[gVG.nodes[i].visibleNodes[j].id].pos.y);
+    if (gNavHUD) {
+        for (var i = 0; i < gVG.nodes.length; i++) {
+            gfxObject.lineStyle(2, 0x000000, 0.2);
+            gfxObject.drawCircle(gVG.nodes[i].pos.x, gVG.nodes[i].pos.y, 8);
+            gfxObject.lineStyle(1, 0xaa0000, 0.2);
+            for (var j = 0; j < gVG.nodes[i].visibleNodes.length; j++) {
+                gfxObject.moveTo(gVG.nodes[i].pos.x, gVG.nodes[i].pos.y);
+                gfxObject.lineTo(gVG.nodes[gVG.nodes[i].visibleNodes[j].id].pos.x, gVG.nodes[gVG.nodes[i].visibleNodes[j].id].pos.y);
+            }
         }
     }
 
@@ -376,6 +391,7 @@ function updateInfoWindow() {
         html += '<br><br>Reset in ' + gStats.resetCountdown + (gStats.resetCountdown == 1 ? ' second' : ' seconds');
     }
     var htmlSub = '<input type="button" id="resetBut" value="Reset"></input>';
+    htmlSub += '<input type="button" id="navHUDBut" value="Toggle NavHUD"></input>';
 
     $('#IWmain').empty();
     $('#IWmain').append(html);
@@ -383,6 +399,9 @@ function updateInfoWindow() {
     $('#IWsub').append(htmlSub);
     $('#resetBut').mousedown(function () {
         init();
+    });
+    $('#navHUDBut').mousedown(function () {
+        navHUDtoggle();
     });
 }
 

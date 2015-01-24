@@ -1,42 +1,48 @@
 ﻿function navigatePlayer(player: Player) {
-  var destinationDistance = getDistance(player.pos, player.destination);
-  if (destinationDistance < 1) {
-    player.stop();
-    player.isMoving = false;
-    gStats.playersMoving--;
-  }
-  else {
-    // Reorient algorithm
-    player.speed = PHYSICS_MAXSPEED;
-    var originalV: Vector2D = new Vector2D({ x: player.vel.x, y: player.vel.y });
-    var newV: Vector2D = new Vector2D({ x: 0, y: 0});
-    newV = reorient(originalV, getVectorAB(player.pos, player.destination), player.id);
-
-    if(gAvoidOn) {
-      // Avoidance algorithm
-      var closestPlayerID: number = selectOtherPlayer(player.pos.x, player.pos.y, player.id);
-      if (closestPlayerID != -1) {
-        var closestPlayer: Player = gPlayers[closestPlayerID];
-        var closesetDistance: number = getDistance(player.pos, closestPlayer.pos);
-        var detectRadius: number = player.collisionRadius + closestPlayer.collisionRadius + DETECT_RADIUS;
-        if (closesetDistance < detectRadius) {
-          var brakingForce = calcBrakingForce(closesetDistance - player.collisionRadius - closestPlayer.collisionRadius);
-          player.speed = PHYSICS_MAXSPEED * (1 - brakingForce);
-          //console.log(player.id + ' Avoiding: ' + closestPlayer.id);
-          newV = avoid(newV, getVectorAB(player.pos, closestPlayer.pos));
-        }
+  if(player.waypoints.length > 0) {
+    player.destination = player.waypoints[player.waypoints.length - 1];
+    var destinationDistance = getDistance(player.pos, player.destination);
+    if (destinationDistance < 1) {
+      player.waypoints.pop();
+      if (player.waypoints.length == 0) {
+        player.stop();
+        player.isMoving = false;
+        gStats.playersMoving--;
       }
     }
-    player.vel = newV;
-    // Calculate slowdown for nearing destination
-    var destBrakingForce = calcBrakingForce(destinationDistance);
-    player.speed = Math.min(PHYSICS_MAXSPEED * (1 - destBrakingForce), player.speed);
+    else {
+      // Reorient algorithm
+      player.speed = PHYSICS_MAXSPEED;
+      var originalV: Vector2D = new Vector2D({ x: player.vel.x, y: player.vel.y });
+      var newV: Vector2D = new Vector2D({ x: 0, y: 0 });
+      newV = reorient(originalV, getVectorAB(player.pos, player.destination), player.id);
 
-    // Set speed due to braking etc
-    var adjustedVel: Vector2D = player.vel.normalize();
-    adjustedVel.x *= player.speed;
-    adjustedVel.y *= player.speed;
-    player.vel = adjustedVel;
+      if (gAvoidOn) {
+        // Avoidance algorithm
+        var closestPlayerID: number = selectOtherPlayer(player.pos.x, player.pos.y, player.id);
+        if (closestPlayerID != -1) {
+          var closestPlayer: Player = gPlayers[closestPlayerID];
+          var closesetDistance: number = getDistance(player.pos, closestPlayer.pos);
+          var detectRadius: number = player.collisionRadius + closestPlayer.collisionRadius + DETECT_RADIUS;
+          if (closesetDistance < detectRadius) {
+            var brakingForce = calcBrakingForce(closesetDistance - player.collisionRadius - closestPlayer.collisionRadius);
+            player.speed = PHYSICS_MAXSPEED * (1 - brakingForce);
+            //console.log(player.id + ' Avoiding: ' + closestPlayer.id);
+            newV = avoid(newV, getVectorAB(player.pos, closestPlayer.pos));
+          }
+        }
+      }
+      player.vel = newV;
+      // Calculate slowdown for nearing destination
+      var destBrakingForce = calcBrakingForce(destinationDistance);
+      player.speed = Math.min(PHYSICS_MAXSPEED * (1 - destBrakingForce), player.speed);
+
+      // Set speed due to braking etc
+      var adjustedVel: Vector2D = player.vel.normalize();
+      adjustedVel.x *= player.speed;
+      adjustedVel.y *= player.speed;
+      player.vel = adjustedVel;
+    }
   }
 }
 

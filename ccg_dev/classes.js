@@ -309,9 +309,10 @@ var VisGraph = (function () {
     };
     VisGraph.prototype.removeNode = function (id) {
         for (var i = 0; i < this.nodes[id].visibleNodes.length; i++) {
-            this.nodes[id].removeVisible(this.nodes[id].visibleNodes[i].id);
+            this.nodes[this.nodes[id].visibleNodes[i].id].removeVisible(id);
         }
         this.nodes.splice(id, 1);
+        //}
     };
     return VisGraph;
 })();
@@ -319,8 +320,10 @@ var VisGraph = (function () {
 var VGnode = (function () {
     function VGnode(properties) {
         this.id = properties.id;
-        this.visibleNodes = [];
+        this.visibleNodes = properties.visibleNodes || [];
         this.pos = properties.pos;
+        this.prev = properties.prev || -1;
+        this.distanceFromSource = properties.distanceFromSource || Infinity;
     }
     VGnode.prototype.addVisible = function (nodeEntry) {
         this.visibleNodes.push(nodeEntry);

@@ -427,10 +427,12 @@ class VisGraph {
   }
   removeNode(id: number) {
     // loop through all visible nodes
-    for (var i = 0; i < this.nodes[id].visibleNodes.length; i++) {
-      this.nodes[id].removeVisible(this.nodes[id].visibleNodes[i].id);
-    }
-    this.nodes.splice(id, 1);
+    //for (var j = 0; j < this.nodes.length; j++) {
+      for (var i = 0; i < this.nodes[id].visibleNodes.length; i++) {
+        this.nodes[this.nodes[id].visibleNodes[i].id].removeVisible(id);
+      }
+      this.nodes.splice(id, 1);
+    //}
   }
 }
 
@@ -438,10 +440,14 @@ class VGnode {
   id: number;
   pos: Vector2D;
   visibleNodes: VGnodeEntry[];
+  prev: number;
+  distanceFromSource: number;
   constructor(properties: VGnodeProps) {
     this.id = properties.id;
-    this.visibleNodes = [];
+    this.visibleNodes = properties.visibleNodes || [];
     this.pos = properties.pos;
+    this.prev = properties.prev || -1;
+    this.distanceFromSource = properties.distanceFromSource || Infinity;
   }
   addVisible(nodeEntry: VGnodeEntry) {
     this.visibleNodes.push(nodeEntry);
@@ -460,6 +466,9 @@ class VGnode {
 interface VGnodeProps {
   id: number;
   pos: Vector2D;
+  visibleNodes?: VGnodeEntry[];
+  prev?: number;
+  distanceFromSource?: number;
 }
 
 class VGnodeEntry {

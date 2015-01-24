@@ -15,6 +15,7 @@
   isMoving: boolean;
   isSelected: boolean;
   history: Vector2D[];
+  waypoints: Vector2D[];
   constructor(properties: PlayerProps) {
     super(properties);
     this.distances = [];
@@ -34,6 +35,7 @@
     this.isMoving = false;
     this.isSelected = false;
     this.history = [];
+    this.waypoints = [];
   }
 
   moveTowards(pos: Vector2D) {
@@ -58,6 +60,31 @@
   stop() {
     this.vel.x = 0;
     this.vel.y = 0;
+  }
+  addWaypoint(x: number, y: number) {
+    // first/next waypoint is the last element in the array
+    var waypoint: Vector2D = new Vector2D({ x: x, y: y });
+    this.waypoints.push(waypoint);
+  }
+  emptyWaypoints() {
+    this.waypoints = [];
+  }
+  removeWaypointAtPos(x: number, y: number) {
+    for (var i = 0; i < this.waypoints.length; i++) {
+      if (this.waypoints[i].x == x && this.waypoints[i].y == y) {
+        this.waypoints.splice(i, 1);
+        return;
+      }
+    }
+  }
+  setWaypoints(target: Vector2D) {
+    var waypoints: number[] = getWaypoints(this.pos.x, this.pos.y, target.x, target.y);
+    this.addWaypoint(target.x, target.y);
+    for (var i = 0; i < waypoints.length;i++) {
+      var x: number = gVG.nodes[waypoints[i]].pos.x;
+      var y: number = gVG.nodes[waypoints[i]].pos.y;
+      this.addWaypoint(x, y);
+    }
   }
 }
 
