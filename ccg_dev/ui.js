@@ -1,4 +1,82 @@
 ﻿// UI functions
+function addInputListeners() {
+    $(document).on("keydown", function (event) {
+        keyDown(event);
+    });
+    $(document).on("mousedown", function (event) {
+        mouseDown(event);
+    });
+    $(document).keyup(function (event) {
+        keyUp(event);
+    });
+    document.body.addEventListener('mousemove', getMousePos);
+}
+
+function getMousePos(event) {
+    gPointer.pos.x = event.clientX;
+    gPointer.pos.y = event.clientY;
+}
+
+// Info window
+function updateInfoWindow() {
+    var html = '';
+    html += 'startTime: ' + gStats.startTime;
+    html += '<br>frameCounter: ' + gStats.frameCounter;
+    html += '<br>currentTime: ' + gStats.currentTime;
+    html += '<br>fps: ' + gStats.fps;
+    html += '<br>lastFrameTime: ' + gStats.lastFrameTime;
+
+    //html += '<br>kills: ' + gStats.kills;
+    //html += '<br>teamKillsA: ' + gStats.teamKillsA;
+    //html += '<br>teamKillsB: ' + gStats.teamKillsB;
+    html += '<br>playersAlive: ' + gStats.playersAlive;
+
+    //html += '<br>bombsUsed: ' + gStats.bombsUsed;
+    html += '<br>playersMoving: ' + gStats.playersMoving;
+    html += '<br>playersSelected: ' + gSelectedPlayerIDs.length;
+    html += '<br>Mouse x: ' + gPointer.pos.x;
+    html += '<br>Mouse y: : ' + gPointer.pos.y;
+    html += '<br>Mouse mode: : ' + gPointer.mode;
+    html += '<br>Draw mode: : ' + (gDrawToggle ? 'on' : 'off');
+    if (gPause) {
+        html += '<br><br>GAME PAUSED';
+    }
+    if (gReset) {
+        html += '<br><br>Reset in ' + gStats.resetCountdown + (gStats.resetCountdown == 1 ? ' second' : ' seconds');
+    }
+    var htmlSub = '<input type="button" id="resetBut" value="Reset"></input>';
+    htmlSub += '<br><input type="button" id="navHUDBut" value="Toggle NavHUD"></input>';
+    htmlSub += '<br><input type="button" id="drawBut" value="Toggle Draw"></input>';
+
+    $('#IWmain').empty();
+    $('#IWmain').append(html);
+    $('#IWsub').empty();
+    $('#IWsub').append(htmlSub);
+    $('#resetBut').mousedown(function () {
+        init();
+    });
+    $('#navHUDBut').mousedown(function () {
+        navHUDtoggle();
+    });
+    $('#drawBut').mousedown(function () {
+        drawToggle();
+    });
+}
+
+// button functions
+function resetButton() {
+    init();
+}
+
+function navHUDtoggle() {
+    gNavHUD = !gNavHUD;
+}
+
+function drawToggle() {
+    gDrawToggle = !gDrawToggle;
+}
+
+// mouse functions
 function mouseDown(event) {
     console.log('Mouse:' + event.which + ' Xpos:' + event.pageX + ' Ypos:' + event.pageY);
     var PointerPos = new Vector2D({ x: event.pageX, y: event.pageY });
@@ -26,12 +104,14 @@ function mouseDown(event) {
 
         if (gPointer.mode == 'makedest') {
             console.log('makedestbox');
-            gPlayers[gSelectedPlayerIDs[0]].emptyWaypoints();
-            gPlayers[gSelectedPlayerIDs[0]].setWaypoints(PointerPos);
-            gPlayers[gSelectedPlayerIDs[0]].destination = PointerPos;
-            gPlayers[gSelectedPlayerIDs[0]].isSelected = false;
-            gPlayers[gSelectedPlayerIDs[0]].moveTowards(gPlayers[gSelectedPlayerIDs[0]].destination);
-            gPlayers[gSelectedPlayerIDs[0]].isMoving = true;
+            var player = gPlayers[gSelectedPlayerIDs[0]];
+            player.emptyWaypoints();
+            player.setWaypoints(PointerPos);
+            player.destination = PointerPos;
+            player.isSelected = false;
+            player.moveTowards(player.destination);
+
+            player.isMoving = true;
             gStats.playersMoving++;
             gSelectedPlayerIDs = [];
             gPointer.mode = 'select';
@@ -44,12 +124,13 @@ function mouseDown(event) {
                 var rows = Math.ceil(Math.sqrt(n));
                 var destGrid = createGrid(gPointer.pos.x, gPointer.pos.y, n, 32, rows);
                 for (var i = 0; i < gSelectedPlayerIDs.length; i++) {
-                    gPlayers[gSelectedPlayerIDs[i]].emptyWaypoints();
-                    gPlayers[gSelectedPlayerIDs[i]].setWaypoints(destGrid[i]);
-                    gPlayers[gSelectedPlayerIDs[i]].destination = destGrid[i];
-                    gPlayers[gSelectedPlayerIDs[i]].isSelected = false;
-                    gPlayers[gSelectedPlayerIDs[i]].moveTowards(gPlayers[gSelectedPlayerIDs[i]].destination);
-                    gPlayers[gSelectedPlayerIDs[i]].isMoving = true;
+                    var player = gPlayers[gSelectedPlayerIDs[i]];
+                    player.emptyWaypoints();
+                    player.setWaypoints(destGrid[i]);
+                    player.destination = destGrid[i];
+                    player.isSelected = false;
+                    player.moveTowards(player.destination);
+                    player.isMoving = true;
                     gStats.playersMoving++;
                 }
                 gSelectedPlayerIDs = [];
@@ -77,12 +158,17 @@ function mouseDown(event) {
 //var scenery9 = new Scenery({ rect: new Rect({ x: 450, y: 200, width: 200, height: 16 }) });
 //gScenery.push(scenery1);
 function onMouseUpDraw(event) {
+    var ax = Math.min(gPointer.startDrag.x, gPointer.endDrag.x);
+    var ay = Math.min(gPointer.startDrag.y, gPointer.endDrag.y);
+    var bx = Math.max(gPointer.startDrag.x, gPointer.endDrag.x);
+    var by = Math.max(gPointer.startDrag.y, gPointer.endDrag.y);
+
     var scenery = new Scenery({
         rect: new Rect({
-            x: gPointer.startDrag.x,
-            y: gPointer.startDrag.y,
-            width: gPointer.endDrag.x - gPointer.startDrag.x,
-            height: gPointer.endDrag.y - gPointer.startDrag.y
+            x: ax,
+            y: ay,
+            width: bx - ax,
+            height: by - ay
         })
     });
     gScenery.push(scenery);
@@ -117,6 +203,7 @@ function onMouseUp(event) {
     document.body.removeEventListener('mouseup', onMouseUp);
 }
 
+// Keyboard functions
 function keyDown(event) {
     console.log('Key Pressed:' + event.which);
     if (gPause_released && event.which == 32) {
@@ -144,18 +231,6 @@ function selectPlayer(x, y) {
     }
     console.log('closestPlayerID: ' + closestPlayerID);
     return gPlayers[closestPlayerID];
-}
-
-function resetButton() {
-    init();
-}
-
-function navHUDtoggle() {
-    gNavHUD = !gNavHUD;
-}
-
-function drawToggle() {
-    gDrawToggle = !gDrawToggle;
 }
 
 function updateStats() {

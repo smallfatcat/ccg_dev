@@ -97,8 +97,33 @@ function init() {
   gPlayers = [];
   gScenery = [];
   gEdges = [];
+  gSelectedPlayerIDs = [];
 
-  /*
+  // Add some scenery
+  addScenery();
+
+  // Build Visibility Graph
+  gEdges = buildEdges();
+  gVG = buildVG();
+
+  //Add some players
+  addPlayers();
+}
+
+// On window loaded run main program
+window.onload = () => {
+  // Set up event listeners for keyboard and mouse
+  addInputListeners();
+
+  // Render scene
+  renderPlayAreaPixi();
+
+  // Start physics processing
+  setTimeout(physics, PHYSICS_TICK);
+};
+
+function addScenery() {
+    /*
   var scenery1 = new Scenery({ rect: new Rect({ x: 400, y: 400, width: 64, height: 64 }) });
   var scenery2 = new Scenery({ rect: new Rect({ x: 400, y: 500, width: 64, height: 64 }) });
   var scenery3 = new Scenery({ rect: new Rect({ x: 400, y: 600, width: 64, height: 64 }) });
@@ -118,11 +143,9 @@ function init() {
   gScenery.push(scenery8);
   gScenery.push(scenery9);
   */
-  // Build Visibility Graph
-  gEdges = buildEdges();
-  gVG = buildVG();
- 
+}
 
+function addPlayers() {
   //var posList: Vector2D[] = createNonCollidingVectors(MAX_PLAYERS, INDENT, MAX_WIDTH - INDENT, ((DETECT_RADIUS * 2) + 32));
 
   var posList: Vector2D[] = createGrid(50, 100, 100, ((DETECT_RADIUS * 2)), 5);
@@ -197,22 +220,6 @@ function init() {
   //makeAllThingsApproachEnemies();
   //setTimeout(setApproachTimerFlag, 1000);
 }
-
-// On window loaded run main program
-window.onload = () => {
-  // Set up event listeners for keyboard and mouse
-  $(document).on("keydown", function (event) { keyDown(event) });
-  $(document).on("mousedown", function (event) { mouseDown(event) });
-  $(document).keyup(function (event) { keyUp(event) });
-
-
-
-  // Render scene
-  //render();
-  renderPlayAreaPixi();
-  // Start physics processing
-  setTimeout(physics, PHYSICS_TICK);
-};
 
 function createNonCollidingVectors(n: number, min: number, max: number, spacing: number) {
   var vectorList: Vector2D[] = [];

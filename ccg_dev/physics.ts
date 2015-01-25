@@ -34,7 +34,7 @@ function physics() {
 
 function calcPlayerPhysics() {
   // Loop through all test objects
-  for (var i = 0; i < MAX_PLAYERS; i++) {
+  for (var i = 0; i < gPlayers.length; i++) {
     if (gPlayers[i].isAlive) {
       // Do physics for all test objects 
       physicsPlayer(gPlayers[i]);
