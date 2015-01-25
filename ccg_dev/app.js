@@ -71,6 +71,7 @@ var gApproachTimerFlag = false;
 var gReset = false;
 var gAvoidOn = false;
 var gNavHUD = true;
+var gDrawToggle = false;
 
 // Set up pointer
 var pointerPos = new Vector2D({ x: 0, y: 0 });
@@ -91,13 +92,16 @@ function init() {
     gScenery = [];
     gEdges = [];
 
-    var scenery1 = new Scenery({ rect: new Rect({ x: 400, y: 400, width: 50, height: 50 }) });
-    var scenery2 = new Scenery({ rect: new Rect({ x: 425, y: 425, width: 50, height: 50 }) });
-    var scenery3 = new Scenery({ rect: new Rect({ x: 500, y: 200, width: 100, height: 100 }) });
-    var scenery4 = new Scenery({ rect: new Rect({ x: 700, y: 125, width: 75, height: 100 }) });
-    var scenery5 = new Scenery({ rect: new Rect({ x: 100, y: 650, width: 50, height: 100 }) });
-    var scenery6 = new Scenery({ rect: new Rect({ x: 500, y: 650, width: 50, height: 100 }) });
-    var scenery7 = new Scenery({ rect: new Rect({ x: 150, y: 650, width: 450, height: 30 }) });
+    /*
+    var scenery1 = new Scenery({ rect: new Rect({ x: 400, y: 400, width: 64, height: 64 }) });
+    var scenery2 = new Scenery({ rect: new Rect({ x: 400, y: 500, width: 64, height: 64 }) });
+    var scenery3 = new Scenery({ rect: new Rect({ x: 400, y: 600, width: 64, height: 64 }) });
+    var scenery4 = new Scenery({ rect: new Rect({ x: 480, y: 400, width: 16, height: 300 }) });
+    var scenery5 = new Scenery({ rect: new Rect({ x: 400, y: 300, width: 300, height: 16 }) });
+    var scenery6 = new Scenery({ rect: new Rect({ x: 400, y: 100, width: 16, height: 200 }) });
+    var scenery7 = new Scenery({ rect: new Rect({ x: 400, y: 100, width: 200, height: 16 }) });
+    var scenery8 = new Scenery({ rect: new Rect({ x: 584, y: 100, width: 16, height: 150 }) });
+    var scenery9 = new Scenery({ rect: new Rect({ x: 450, y: 200, width: 200, height: 16 }) });
     gScenery.push(scenery1);
     gScenery.push(scenery2);
     gScenery.push(scenery3);
@@ -105,7 +109,9 @@ function init() {
     gScenery.push(scenery5);
     gScenery.push(scenery6);
     gScenery.push(scenery7);
-
+    gScenery.push(scenery8);
+    gScenery.push(scenery9);
+    */
     // Build Visibility Graph
     gEdges = buildEdges();
     gVG = buildVG();

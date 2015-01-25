@@ -3,64 +3,99 @@ function mouseDown(event) {
     console.log('Mouse:' + event.which + ' Xpos:' + event.pageX + ' Ypos:' + event.pageY);
     var PointerPos = new Vector2D({ x: event.pageX, y: event.pageY });
     gPointer.pos = PointerPos;
-    if (gPointer.mode == 'select') {
-        deselectPlayers();
-        var selectedID = checkMouseHit(gPointer.pos);
-        if (selectedID != -1) {
-            var selectedPlayer = gPlayers[selectedID];
-            selectedPlayer.isSelected = true;
-            gSelectedPlayerIDs.push(selectedPlayer.id);
-            gPointer.mode = 'makedest';
+    if (!gDrawToggle) {
+        if (gPointer.mode == 'select') {
+            deselectPlayers();
+            var selectedID = checkMouseHit(gPointer.pos);
+            if (selectedID != -1) {
+                var selectedPlayer = gPlayers[selectedID];
+                selectedPlayer.isSelected = true;
+                gSelectedPlayerIDs.push(selectedPlayer.id);
+                gPointer.mode = 'makedest';
+                return;
+            } else {
+                gPointer.startDrag.x = event.pageX;
+                gPointer.startDrag.y = event.pageY;
+                gPointer.endDrag.x = event.pageX;
+                gPointer.endDrag.y = event.pageY;
+                document.body.addEventListener('mousemove', onMouseMove);
+                document.body.addEventListener('mouseup', onMouseUp);
+                gPointer.mode = 'drag';
+            }
+        }
+
+        if (gPointer.mode == 'makedest') {
+            console.log('makedestbox');
+            gPlayers[gSelectedPlayerIDs[0]].emptyWaypoints();
+            gPlayers[gSelectedPlayerIDs[0]].setWaypoints(PointerPos);
+            gPlayers[gSelectedPlayerIDs[0]].destination = PointerPos;
+            gPlayers[gSelectedPlayerIDs[0]].isSelected = false;
+            gPlayers[gSelectedPlayerIDs[0]].moveTowards(gPlayers[gSelectedPlayerIDs[0]].destination);
+            gPlayers[gSelectedPlayerIDs[0]].isMoving = true;
+            gStats.playersMoving++;
+            gSelectedPlayerIDs = [];
+            gPointer.mode = 'select';
             return;
-        } else {
+        }
+        if (gPointer.mode == 'makedestbox') {
+            console.log('makedestbox');
+            var n = gSelectedPlayerIDs.length;
+            if (n > 0) {
+                var rows = Math.ceil(Math.sqrt(n));
+                var destGrid = createGrid(gPointer.pos.x, gPointer.pos.y, n, 32, rows);
+                for (var i = 0; i < gSelectedPlayerIDs.length; i++) {
+                    gPlayers[gSelectedPlayerIDs[i]].emptyWaypoints();
+                    gPlayers[gSelectedPlayerIDs[i]].setWaypoints(destGrid[i]);
+                    gPlayers[gSelectedPlayerIDs[i]].destination = destGrid[i];
+                    gPlayers[gSelectedPlayerIDs[i]].isSelected = false;
+                    gPlayers[gSelectedPlayerIDs[i]].moveTowards(gPlayers[gSelectedPlayerIDs[i]].destination);
+                    gPlayers[gSelectedPlayerIDs[i]].isMoving = true;
+                    gStats.playersMoving++;
+                }
+                gSelectedPlayerIDs = [];
+            }
+            gPointer.mode = 'select';
+        }
+    } else {
+        if (gPointer.mode == 'select' && event.pageX < 800) {
             gPointer.startDrag.x = event.pageX;
             gPointer.startDrag.y = event.pageY;
             gPointer.endDrag.x = event.pageX;
             gPointer.endDrag.y = event.pageY;
-            document.body.addEventListener('mousemove', onMouseMove);
-            document.body.addEventListener('mouseup', onMouseUp);
+            document.body.addEventListener('mousemove', onMouseMoveDraw);
+            document.body.addEventListener('mouseup', onMouseUpDraw);
             gPointer.mode = 'drag';
         }
-    }
-
-    if (gPointer.mode == 'makedest') {
-        console.log('makedestbox');
-        gPlayers[gSelectedPlayerIDs[0]].emptyWaypoints();
-        gPlayers[gSelectedPlayerIDs[0]].setWaypoints(PointerPos);
-        gPlayers[gSelectedPlayerIDs[0]].destination = PointerPos;
-        gPlayers[gSelectedPlayerIDs[0]].isSelected = false;
-        gPlayers[gSelectedPlayerIDs[0]].moveTowards(gPlayers[gSelectedPlayerIDs[0]].destination);
-        gPlayers[gSelectedPlayerIDs[0]].isMoving = true;
-        gStats.playersMoving++;
-        gSelectedPlayerIDs = [];
-        gPointer.mode = 'select';
-        return;
-    }
-
-    if (gPointer.mode == 'makedestbox') {
-        console.log('makedestbox');
-        var n = gSelectedPlayerIDs.length;
-        if (n > 0) {
-            var rows = Math.ceil(Math.sqrt(n));
-            var destGrid = createGrid(gPointer.pos.x, gPointer.pos.y, n, 32, rows);
-            for (var i = 0; i < gSelectedPlayerIDs.length; i++) {
-                gPlayers[gSelectedPlayerIDs[i]].emptyWaypoints();
-                gPlayers[gSelectedPlayerIDs[i]].setWaypoints(destGrid[i]);
-                gPlayers[gSelectedPlayerIDs[i]].destination = destGrid[i];
-                gPlayers[gSelectedPlayerIDs[i]].isSelected = false;
-                gPlayers[gSelectedPlayerIDs[i]].moveTowards(gPlayers[gSelectedPlayerIDs[i]].destination);
-                gPlayers[gSelectedPlayerIDs[i]].isMoving = true;
-                gStats.playersMoving++;
-            }
-            gSelectedPlayerIDs = [];
-        }
-        gPointer.mode = 'select';
     }
     /*
     var bomb = new Bomb({ id: gBombs.length, pos: { x: event.pageX, y: event.pageY }, maxRadius: 150, minRadius: 1, maxLifeTime: 1, damage: 1 })
     gBombs.push(bomb);
     gStats.bombsUsed++;
     */
+}
+
+//var scenery9 = new Scenery({ rect: new Rect({ x: 450, y: 200, width: 200, height: 16 }) });
+//gScenery.push(scenery1);
+function onMouseUpDraw(event) {
+    var scenery = new Scenery({
+        rect: new Rect({
+            x: gPointer.startDrag.x,
+            y: gPointer.startDrag.y,
+            width: gPointer.endDrag.x - gPointer.startDrag.x,
+            height: gPointer.endDrag.y - gPointer.startDrag.y
+        })
+    });
+    gScenery.push(scenery);
+    gEdges = buildEdges();
+    gVG = buildVG();
+    gPointer.mode = 'select';
+    document.body.removeEventListener('mousemove', onMouseMoveDraw);
+    document.body.removeEventListener('mouseup', onMouseUpDraw);
+}
+
+function onMouseMoveDraw(event) {
+    gPointer.endDrag.x = event.pageX;
+    gPointer.endDrag.y = event.pageY;
 }
 
 function onMouseMove(event) {
@@ -117,6 +152,10 @@ function resetButton() {
 
 function navHUDtoggle() {
     gNavHUD = !gNavHUD;
+}
+
+function drawToggle() {
+    gDrawToggle = !gDrawToggle;
 }
 
 function updateStats() {

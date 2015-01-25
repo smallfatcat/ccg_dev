@@ -392,6 +392,7 @@ function updateInfoWindow() {
     }
     var htmlSub = '<input type="button" id="resetBut" value="Reset"></input>';
     htmlSub += '<input type="button" id="navHUDBut" value="Toggle NavHUD"></input>';
+    htmlSub += '<input type="button" id="drawBut" value="Toggle Draw"></input>';
 
     $('#IWmain').empty();
     $('#IWmain').append(html);
@@ -402,6 +403,9 @@ function updateInfoWindow() {
     });
     $('#navHUDBut').mousedown(function () {
         navHUDtoggle();
+    });
+    $('#drawBut').mousedown(function () {
+        drawToggle();
     });
 }
 
